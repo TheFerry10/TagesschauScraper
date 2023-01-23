@@ -20,12 +20,17 @@ def get_hash_from_string(string):
     return result.hexdigest()
 
    
-class WebsiteCheck(object):
+class WebsiteCheck:
     def __init__(self, url):
         self.url = url
         response = requests.get(url=self.url)
-        self.soup = self.get_soup(response)
+        self.soup = get_soup(response)
         
+    def element_exists(self, element):
+        if self.soup.find(**element):
+            return True
+        else:
+            return False
         
     def check_element_exists(self, element, target_text):
         results = self.soup.find(**element)

@@ -3,29 +3,55 @@ from scraping.retrieve import get_soup, get_hash_from_string
 import requests
 import datetime
 from datetime import date
-from typing import List
+from typing import List, Literal
 from scraping.helper import normalize_datetime
+from scraping import retrieve
 
 
 
 class TagesschauScraper:
     """
-    Tagesschau
+    A web scraper specified for scraping the news archive of Tagesschau.de. 
     """    
     def __init__(self):
         self.ressorts = ["wirtschaft", "inland", "ausland"]
         self.date_pattern = "%Y-%m-%d"
+        
+    def is_url_valid(self, url: str) -> bool:
+        website_check = retrieve.WebsiteCheck(url)
+        return website_check.element_exists(element={'class': 'archive__headline'})
     
-    def get_url(self, date_: date, ressort: str = None):
+    def create_url_for_news_archive(self, date_: date, ressort: Literal["wirtschaft", "inland", "ausland"] = None) -> str:
+        """
+        Creating a url leading to the articles published on the specified date.
+        Additionally, the articles can be filtered by the ressort.
+
+        Parameters
+        ----------
+        date_ : date
+            Filter articles on date.
+        ressort : str, optional
+            Filter articles on ressort. Could be "wirtschaft", "inland", "ausland" or None.
+            If None, filter is not applied. By default None.
+
+        Returns
+        -------
+        str
+           Url for the news archive.
+
+        Raises
+        ------
+        ValueError
+            When ressort is not defined.
+        """        
         date_str = date_.strftime(self.date_pattern)
         if ressort in self.ressorts:
             return f"https://www.tagesschau.de/archiv/?datum={date_str}&ressort={ressort}"
         elif ressort is None:
             return f"https://www.tagesschau.de/archiv/?datum={date_str}"
         else:
-            raise ValueError
+            raise ValueError(f"Ressort {ressort} not defined. Ressort must be in {self.ressorts}")
         
-    
     def get_archive_headline(self, soup):
         archive_headline = soup.find(class_="archive__headline").get_text()
         return archive_headline
