@@ -77,7 +77,7 @@ class TagesschauScraper:
             )
 
     def _extract_info_for_all_teaser(self, soup: BeautifulSoup) -> dict:
-        self.teaser_element = {"class": "list columns twelve teasergroup--docked"}
+        self.teaser_element = {"class": "columns teaser-xs twelve teaser-xs__wide"}
         extracted_teaser_list = []
         for teaser in soup.find_all(**self.teaser_element):
             teaserObj = Teaser(soup=teaser)
@@ -122,7 +122,10 @@ class Archive:
         return date(year, month, day)
 
     def extract_info_from_archive(self) -> dict:
-        name_html_mapping_text = {"headline": "archive__headline"}
+        name_html_mapping_text = {
+            "headline": "archive__headline",
+            "num_teaser": "ergebnisse__anzahl",
+        }
         self.archive_info = {
             name: retrieve.get_text_from_html(self.archive_soup, {"class_": html_tag})
             for name, html_tag in name_html_mapping_text.items()
@@ -165,14 +168,14 @@ class Teaser:
         name_html_mapping_link = {key: f"teaser-xs__{key}" for key in ["link"]}
 
         self.teaser_info = {
-            name: retrieve.get_text_from_html(self.teaser_soup, {"class_": html_tag})
+            name: self.teaser_soup.find(**{"class_": html_tag}).get_text(
+                strip=True, separator=" "
+            )
             for name, html_tag in name_html_mapping_text.items()
         }
         self.teaser_info.update(
             {
-                name: retrieve.get_link_from_html(
-                    self.teaser_soup, {"class_": html_tag}
-                )
+                name: self.teaser_soup.find(**{"class_": html_tag}).get("href")
                 for name, html_tag in name_html_mapping_link.items()
             }
         )
@@ -263,7 +266,7 @@ class Article:
             ]
         else:
             tags = []
-        return {"tags": ",".join(tags)}
+        return {"tags": ",".join(sorted(tags))}
 
 
 class TagesschauDB:

@@ -22,12 +22,12 @@ def get_soup(response: Response) -> BeautifulSoup:
     return BeautifulSoup(response.text, "html.parser")
 
 
-def get_text_from_html(soup, element):
-    soup.find(**element).get_text(strip=True)
+def get_text_from_html(soup, element, separator="\n"):
+    return soup.find(**element).get_text(strip=True, separator=separator)
 
 
 def get_link_from_html(soup, element):
-    soup.find(**element).get("href")
+    return soup.find(**element).get("href")
 
 
 class WebsiteTest:
@@ -43,11 +43,8 @@ class WebsiteTest:
     def is_element(self, name=None, attrs={}, recursive=True, string=None, **kwargs):
         f"""
         Check if html element exists on website.
-
-        Docstring for bs4 function find:
-        {self.soup.find.__doc__}
         """
-        if self.soup.find(name, attrs, recursive, string, **kwargs):
+        if self.soup.find(name=None, attrs={}, recursive=True, string=None, **kwargs):
             return True
         else:
             return False
