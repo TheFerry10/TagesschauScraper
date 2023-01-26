@@ -20,7 +20,7 @@ def main():
         print(url)
         response = requests.get(url)
         soup = get_soup(response)
-        teasers = tagesschauScraper.get_all_news_teaser(soup)
+        teasers = tagesschauScraper.get_news_teaser(soup)
         for teaser in teasers:
             if teaser:
                 db.insert(teaser)

@@ -1,102 +1,283 @@
 import sqlite3
-from scraping.retrieve import get_soup, get_hash_from_string
-import requests
-import datetime
 from datetime import date
-from typing import List, Literal
-from scraping.helper import normalize_datetime
-from scraping import retrieve
+from typing import Literal
 
+import requests
+from bs4 import BeautifulSoup
+
+from scraping import constants, helper, retrieve
+
+
+def create_url_for_news_archive(
+    date_: date, ressort: Literal["wirtschaft", "inland", "ausland", "all"] = "all"
+) -> str:
+    """
+    Creating a url leading to the articles published on the specified date.
+    Additionally, the articles can be filtered by the ressort.
+
+    Parameters
+    ----------
+    date_ : date
+        Filter articles on date.
+    ressort : str, optional
+        Filter articles on ressort. Could be "wirtschaft", "inland", "ausland" or "all".
+        By default, "all" is selected.
+
+    Returns
+    -------
+    str
+        Url for the news archive.
+
+    Raises
+    ------
+    ValueError
+        When ressort is not defined.
+    """
+    ressorts = ["wirtschaft", "inland", "ausland"]
+    date_pattern = "%Y-%m-%d"
+    date_str = date_.strftime(date_pattern)
+    if ressort in ressorts:
+        return f"https://www.tagesschau.de/archiv/?datum={date_str}&ressort={ressort}"
+    elif ressort is None:
+        return f"https://www.tagesschau.de/archiv/?datum={date_str}"
+    else:
+        raise ValueError(
+            f"Ressort {ressort} not defined. Ressort must be in {ressorts}"
+        )
 
 
 class TagesschauScraper:
     """
-    A web scraper specified for scraping the news archive of Tagesschau.de. 
-    """    
-    def __init__(self):
-        self.ressorts = ["wirtschaft", "inland", "ausland"]
-        self.date_pattern = "%Y-%m-%d"
-        
-    def is_url_valid(self, url: str) -> bool:
-        website_check = retrieve.WebsiteCheck(url)
-        return website_check.element_exists(element={'class': 'archive__headline'})
-    
-    def create_url_for_news_archive(self, date_: date, ressort: Literal["wirtschaft", "inland", "ausland"] = None) -> str:
+    A web scraper specified for scraping the news archive of Tagesschau.de.
+    """
+
+    def __init__(self) -> None:
+        self.validation_element = {"class": "archive__headline"}
+
+    def scrape_teaser(self, url: str) -> dict:
         """
-        Creating a url leading to the articles published on the specified date.
-        Additionally, the articles can be filtered by the ressort.
+        Scrape all teaser on the archive <url>.
 
         Parameters
         ----------
-        date_ : date
-            Filter articles on date.
-        ressort : str, optional
-            Filter articles on ressort. Could be "wirtschaft", "inland", "ausland" or None.
-            If None, filter is not applied. By default None.
+        url : str
+            Archive website.
 
         Returns
         -------
-        str
-           Url for the news archive.
+        dict
+            Scraped teaser.
+        """
+        websiteTest = retrieve.WebsiteTest(url)
+        if websiteTest.is_element(self.validation_element):
+            return self._extract_info_for_all_teaser(websiteTest.soup)
+        else:
+            raise ValueError(
+                f"HTML element with specifications {self.validation_element} cannot be found in URL {url}"
+            )
 
-        Raises
-        ------
-        ValueError
-            When ressort is not defined.
-        """        
-        date_str = date_.strftime(self.date_pattern)
-        if ressort in self.ressorts:
-            return f"https://www.tagesschau.de/archiv/?datum={date_str}&ressort={ressort}"
-        elif ressort is None:
-            return f"https://www.tagesschau.de/archiv/?datum={date_str}"
+    def _extract_info_for_all_teaser(self, soup: BeautifulSoup) -> dict:
+        self.teaser_element = {"class": "list columns twelve teasergroup--docked"}
+        extracted_teaser_list = []
+        for teaser in soup.find_all(**self.teaser_element):
+            teaserObj = Teaser(soup=teaser)
+            teaser_info = teaserObj.extract_info_from_teaser()
+            teaser_info_enriched = teaserObj.enrich_teaser_info_with_article_tags(
+                teaser_info
+            )
+            teaser_info_processed = teaserObj.process_info(teaser_info_enriched)
+            if teaserObj.is_teaser_info_valid(teaser_info_processed):
+                extracted_teaser_list.append(teaserObj.teaser_info)
+        return {"teaser": extracted_teaser_list}
+
+
+class Archive:
+    """
+    A class for extracting information from news archive.
+    """
+
+    def __init__(self, soup: BeautifulSoup) -> None:
+        """
+        Initializes the Teaser with the provided BeautifulSoup element.
+
+        Parameters
+        ----------
+        soup : BeautifulSoup
+            BeautifulSoup object representing an element for a news teaser.
+        """
+        self.archive_soup = soup
+        self.archive_info = dict()
+
+    def transform_date_to_date_in_headline(self, date_: date) -> str:
+        year = date_.year
+        month = date_.month
+        day = date_.day
+        return f"{day}. {constants.german_month_names[month]} {year}"
+
+    def transform_date_in_headline_to_date(self, date_in_headline: str) -> date:
+        day_raw, month_raw, year_raw = date_in_headline.split()
+        day = int(day_raw[:-1])
+        month = constants.german_month_names.index(month_raw)
+        year = int(year_raw)
+        return date(year, month, day)
+
+    def extract_info_from_archive(self) -> dict:
+        name_html_mapping_text = {"headline": "archive__headline"}
+        self.archive_info = {
+            name: retrieve.get_text_from_html(self.archive_soup, {"class_": html_tag})
+            for name, html_tag in name_html_mapping_text.items()
+        }
+        return self.archive_info
+
+
+class Teaser:
+    """
+    A class for extracting information from news teaser elements.
+    """
+
+    def __init__(self, soup: BeautifulSoup) -> None:
+        """
+        Initializes the Teaser with the provided BeautifulSoup element.
+
+        Parameters
+        ----------
+        soup : BeautifulSoup
+            BeautifulSoup object representing an element for a news teaser.
+        """
+        self.teaser_soup = soup
+        self.teaser_info = dict()
+        self.required_attributes = {"date", "topline", "headline", "shorttext", "link"}
+
+    def extract_info_from_teaser(self) -> dict:
+        """
+        Extracts structured information from a teaser element.
+        The extracted elements are: date, topline, headline, shorttext and link to the corresponding article.
+
+        Returns
+        -------
+        dict
+            A dictionary containing all the information of the news teaser
+        """
+        name_html_mapping_text = {
+            key: f"teaser-xs__{key}"
+            for key in ["date", "topline", "headline", "shorttext", "link"]
+        }
+        name_html_mapping_link = {key: f"teaser-xs__{key}" for key in ["link"]}
+
+        self.teaser_info = {
+            name: retrieve.get_text_from_html(self.teaser_soup, {"class_": html_tag})
+            for name, html_tag in name_html_mapping_text.items()
+        }
+        self.teaser_info.update(
+            {
+                name: retrieve.get_link_from_html(
+                    self.teaser_soup, {"class_": html_tag}
+                )
+                for name, html_tag in name_html_mapping_link.items()
+            }
+        )
+        return self.teaser_info
+
+    def enrich_teaser_info_with_article_tags(self, teaser_info: dict) -> dict:
+        """
+        Enrich the teaser information with the article tags.
+
+        Parameters
+        ----------
+        teaser_info : dict
+            All information extracted from the news teaser.
+
+        Returns
+        -------
+        dict
+            Dictionary containing news teaser information enriched by article tags.
+        """
+        article_link = teaser_info["link"]
+        try:
+            article_soup = retrieve.get_soup_from_url(article_link)
+            articleObj = Article(article_soup)
+            article_tags = articleObj.extract_article_tags()
+            teaser_info.update(article_tags)
+            self.teaser_info.update(teaser_info)
+
+        except requests.exceptions.TooManyRedirects:
+            print(f"Article not found for link: {article_link}.")
+
+        return teaser_info
+
+    def process_info(self, teaser_info: dict) -> dict:
+        """
+        Process the extracted teaser information.
+
+        Parameters
+        ----------
+        teaser_info : dict
+            Dictionary containing news teaser information.
+
+        Returns
+        -------
+        dict
+            Dictionary containing processed teaser information.
+        """
+        teaser_info["id"] = helper.get_hash_from_string(teaser_info["link"])
+        teaser_info["date"] = helper.transform_datetime_str(teaser_info["date"])
+        self.teaser_info.update(teaser_info)
+        return teaser_info
+
+    def is_teaser_info_valid(self, teaser_info: dict) -> bool:
+        """
+        Check if scraped information exists for all required attributes.
+
+        Parameters
+        ----------
+        teaser_info : dict
+            Dictionary containing news teaser information.
+
+        Returns
+        -------
+        bool
+            News teaser information is valid, when the function returns True.
+        """
+        if not self.required_attributes.difference(teaser_info.keys()):
+            return True
         else:
-            raise ValueError(f"Ressort {ressort} not defined. Ressort must be in {self.ressorts}")
-        
-    def get_archive_headline(self, soup):
-        archive_headline = soup.find(class_="archive__headline").get_text()
-        return archive_headline
-    
-    def get_all_news_teaser(self, soup):
-        all_news_teaser = soup.find_all(class_="columns teaser-xs twelve teaser-xs__wide")
-        teasers = []
-        for teaser in all_news_teaser:
-            teaser_struct = dict()
-            teaser_struct = {key: teaser.find(class_=f"teaser-xs__{key}").get_text(strip=True) for key in ['date', 'topline', 'headline', 'shorttext']}
-            teaser_struct['link'] = teaser.find(class_="teaser-xs__link").get('href')
-            teaser_struct['id'] = get_hash_from_string(teaser_struct['link'])
-            teaser_struct['date'] = normalize_datetime(teaser_struct['date'])
-            
-            try:
-                soup_link = get_soup(requests.get(teaser_struct['link']))
-                teaser_struct['tags'] = ','.join(self.get_tags_from_article(soup_link))
-                teasers.append(teaser_struct)
-                 
-            except requests.exceptions.TooManyRedirects:
-                print(f"Article not found for link: {teaser_struct['link']}. Ignore extracted data.")
-                
-        return teasers
-    
-    def get_tags_from_article(self, soup):
-        tags_group = soup.find(class_="taglist")
+            return False
+
+
+class Article:
+    """
+    A class for extracting information from news article HTML elements.
+    """
+
+    def __init__(self, soup: BeautifulSoup) -> None:
+        self.article_soup = soup
+        self.tags_element = {"class": "taglist"}
+
+    def extract_article_tags(self) -> dict:
+        tags_group = self.article_soup.find(**self.tags_element)
         if tags_group:
-            return [tag.get_text(strip=True) for tag in tags_group.find_all(class_="tag-btn tag-btn--light-grey") if hasattr(tag, "get_text")]
+            tags = [
+                tag.get_text(strip=True)
+                for tag in tags_group.find_all(class_="tag-btn tag-btn--light-grey")
+                if hasattr(tag, "get_text")
+            ]
         else:
-            return []
-        
-        
+            tags = []
+        return {"tags": ",".join(tags)}
+
 
 class TagesschauDB:
     _DB_NAME = "news.db"
     _TABLE_NAME = "Tagesschau"
-    
-    def __init__(self):
+
+    def __init__(self) -> None:
         self.connect()
-        
-    def connect(self):
+
+    def connect(self) -> None:
         self.conn = sqlite3.connect(TagesschauDB._DB_NAME)
         self.c = self.conn.cursor()
         print(f"Connected to {TagesschauDB._DB_NAME}")
-        
+
     def create_table(self) -> None:
         query = f"""
             CREATE TABLE IF NOT EXISTS  {TagesschauDB._TABLE_NAME} (
@@ -109,13 +290,13 @@ class TagesschauDB:
             tags text)
             """
         self.c.execute(query)
-        
+
     def drop_table(self) -> None:
         query = f"""
             DROP TABLE IF EXISTS {TagesschauDB._TABLE_NAME}
             """
         self.c.execute(query)
-        
+
     def insert(self, content: dict) -> None:
         query = f"""
             INSERT OR IGNORE INTO {TagesschauDB._TABLE_NAME}

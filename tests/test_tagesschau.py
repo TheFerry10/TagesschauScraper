@@ -1,10 +1,13 @@
+import json
 import unittest
+from datetime import date
+
 import requests
+
+from scraping.helper import transform_datetime_str
 from scraping.retrieve import get_soup
 from scraping.tagesschau import TagesschauScraper
-from scraping.helper import normalize_datetime
-from datetime import date
-import json
+
 
 class TestTagesschauScraper(unittest.TestCase):
     def setUp(self):  

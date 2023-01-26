@@ -1,40 +1,74 @@
+import sqlite3
 from dataclasses import dataclass
+
+import numpy as np
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-import sqlite3
+from requests.models import Response
 from tqdm import tqdm
-import pandas as pd
-import numpy as np
-from dataclasses import dataclass
-import hashlib
 
 
-def get_soup(response: dict):
+def get_soup_from_url(url: str) -> BeautifulSoup:
+    response = requests.get(url)
     if response.status_code != 200:
         raise ValueError
-    return BeautifulSoup(response.text, 'html.parser')
+    return BeautifulSoup(response.text, "html.parser")
 
 
-def get_hash_from_string(string):
-    result = hashlib.sha1(string.encode())
-    return result.hexdigest()
+def get_soup(response: Response) -> BeautifulSoup:
+    if response.status_code != 200:
+        raise ValueError
+    return BeautifulSoup(response.text, "html.parser")
 
-   
-class WebsiteCheck:
+
+def get_text_from_html(soup, element):
+    soup.find(**element).get_text(strip=True)
+
+
+def get_link_from_html(soup, element):
+    soup.find(**element).get("href")
+
+
+class WebsiteTest:
+    """
+    Testing if a website works as expected.
+    """
+
     def __init__(self, url):
         self.url = url
         response = requests.get(url=self.url)
         self.soup = get_soup(response)
-        
-    def element_exists(self, element):
-        if self.soup.find(**element):
+
+    def is_element(self, name=None, attrs={}, recursive=True, string=None, **kwargs):
+        f"""
+        Check if html element exists on website.
+
+        Docstring for bs4 function find:
+        {self.soup.find.__doc__}
+        """
+        if self.soup.find(name, attrs, recursive, string, **kwargs):
             return True
         else:
             return False
-        
-    def check_element_exists(self, element, target_text):
-        results = self.soup.find(**element)
-        if results:
-            return target_text in results.get_text()
+
+    def is_text_in_element(
+        self,
+        target_text: str,
+        name=None,
+        attrs={},
+        recursive=True,
+        string=None,
+        **kwargs,
+    ):
+        f"""
+        Check if text is in html element.
+
+        Docstring for bs4 function find:
+        {self.soup.find.__doc__}
+        """
+        result = self.soup.find(name, attrs, recursive, string, **kwargs)
+        if result:
+            return target_text in result.get_text()
         else:
             return False
