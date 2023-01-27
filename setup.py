@@ -11,7 +11,7 @@ setup(
     url='https://github.com/TheFerry10/TagesschauScraper',
     author='Malte Sauerwein',
     author_email='malte.sauerwein@live.de',
-    license='MIT',
+    license='GPL-3.0 license',
     keywords='tagesschau scraper scraping news archive',
     packages=find_packages(),
     install_requires=[
