@@ -3,7 +3,7 @@ from datetime import date
 from typing import Literal
 
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from scraping import constants, helper, retrieve
 
@@ -38,7 +38,7 @@ def create_url_for_news_archive(
     date_str = date_.strftime(date_pattern)
     if ressort in ressorts:
         return f"https://www.tagesschau.de/archiv/?datum={date_str}&ressort={ressort}"
-    elif ressort is None:
+    elif ressort == "all":
         return f"https://www.tagesschau.de/archiv/?datum={date_str}"
     else:
         raise ValueError(
@@ -161,24 +161,24 @@ class Teaser:
         dict
             A dictionary containing all the information of the news teaser
         """
-        name_html_mapping_text = {
-            key: f"teaser-xs__{key}"
-            for key in ["date", "topline", "headline", "shorttext", "link"]
+        field_names_text = ["date", "topline", "headline", "shorttext"]
+        field_names_link = ["link"]
+        name_html_mapping = {
+            key: f"teaser-xs__{key}" for key in field_names_text + field_names_link
         }
-        name_html_mapping_link = {key: f"teaser-xs__{key}" for key in ["link"]}
 
-        self.teaser_info = {
-            name: self.teaser_soup.find(**{"class_": html_tag}).get_text(
-                strip=True, separator=" "
-            )
-            for name, html_tag in name_html_mapping_text.items()
-        }
-        self.teaser_info.update(
-            {
-                name: self.teaser_soup.find(**{"class_": html_tag}).get("href")
-                for name, html_tag in name_html_mapping_link.items()
-            }
-        )
+        for field_name, html_class_name in name_html_mapping.items():
+            tag = self.teaser_soup.find(**{"class_": html_class_name})
+            if isinstance(tag, Tag):
+                if field_name in field_names_text:
+                    self.teaser_info[field_name] = tag.get_text(
+                        strip=True, separator=" "
+                    )
+                elif field_name in field_names_link:
+                    self.teaser_info[field_name] = tag.get("href")
+                else:
+                    raise ValueError
+
         return self.teaser_info
 
     def enrich_teaser_info_with_article_tags(self, teaser_info: dict) -> dict:
@@ -258,7 +258,7 @@ class Article:
 
     def extract_article_tags(self) -> dict:
         tags_group = self.article_soup.find(**self.tags_element)
-        if tags_group:
+        if isinstance(tags_group, Tag):
             tags = [
                 tag.get_text(strip=True)
                 for tag in tags_group.find_all(class_="tag-btn tag-btn--light-grey")

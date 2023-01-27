@@ -13,3 +13,5 @@ german_month_names = [
     "November",
     "Dezember",
 ]
+
+data_dir = "data"

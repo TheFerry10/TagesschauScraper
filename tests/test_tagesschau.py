@@ -1,12 +1,19 @@
 import json
 import unittest
 from datetime import date
+from typing import Literal
 
 import requests
 from bs4 import BeautifulSoup
 
 from scraping import helper, retrieve
-from scraping.tagesschau import Archive, Article, TagesschauScraper, Teaser
+from scraping.tagesschau import (
+    Archive,
+    Article,
+    TagesschauScraper,
+    Teaser,
+    create_url_for_news_archive,
+)
 
 
 class TestTagesschauScraper(unittest.TestCase):
@@ -140,8 +147,9 @@ class TestTeaser(unittest.TestCase):
 
 class TestArticle(unittest.TestCase):
     def setUp(self):
-        article_link = "https://www.tagesschau.de/wirtschaft/finanzen/marktberichte/marktbericht-dax-dow-jones-213.html"
-        self.soup = retrieve.get_soup_from_url(article_link)
+        with open("data/tests/article.html", "r") as f:
+            markup = f.read()
+        self.soup = BeautifulSoup(markup, "html.parser")
 
     def test_extract_article_tags(self):
         article = Article(self.soup)
@@ -154,10 +162,9 @@ class TestArticle(unittest.TestCase):
 
 class TestArchive(unittest.TestCase):
     def setUp(self):
-        archive_link = (
-            "https://www.tagesschau.de/archiv/?datum=2022-03-01&ressort=wirtschaft"
-        )
-        self.soup = retrieve.get_soup_from_url(archive_link)
+        with open("data/tests/archive.html", "r") as f:
+            markup = f.read()
+        self.soup = BeautifulSoup(markup, "html.parser")
 
     def test_transform_date_to_date_in_headline(self):
         date_ = date(2022, 3, 1)
@@ -178,6 +185,30 @@ class TestArchive(unittest.TestCase):
         archive_info = archive.extract_info_from_archive()
         true_archive_info = {"headline": "1. März 2022", "num_teaser": "20"}
         self.assertEqual(archive_info, true_archive_info)
+
+
+class TestCreateURL(unittest.TestCase):
+    def test_create_url_for_news_archive(self):
+        urls = {
+            "wirtschaft": "https://www.tagesschau.de/archiv/?datum=2022-03-01&ressort=wirtschaft",
+            "inland": "https://www.tagesschau.de/archiv/?datum=2022-03-01&ressort=inland",
+            "ausland": "https://www.tagesschau.de/archiv/?datum=2022-03-01&ressort=ausland",
+            "all": "https://www.tagesschau.de/archiv/?datum=2022-03-01",
+        }
+        date_ = date(2022, 3, 1)
+        self.assertEqual(
+            create_url_for_news_archive(date_=date_, ressort="wirtschaft"),
+            urls["wirtschaft"],
+        )
+        self.assertEqual(
+            create_url_for_news_archive(date_=date_, ressort="inland"), urls["inland"]
+        )
+        self.assertEqual(
+            create_url_for_news_archive(date_=date_, ressort="ausland"), urls["ausland"]
+        )
+        self.assertEqual(
+            create_url_for_news_archive(date_=date_, ressort="all"), urls["all"]
+        )
 
 
 if __name__ == "__main__":
