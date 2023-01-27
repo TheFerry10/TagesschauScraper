@@ -1,7 +1,7 @@
 FROM python:3.9-slim-bullseye
 
 RUN apt-get update && \
-    apt-get -y install make git jupyter
+    apt-get -y install make git jupyter black
 
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV

@@ -1,5 +1,5 @@
 import unittest
-from scraping.helper import transform_datetime_str
+from tagesschauscraper.helper import transform_datetime_str
 
 
 class TestNormalizeDatetime(unittest.TestCase):

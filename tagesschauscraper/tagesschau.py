@@ -1,26 +1,26 @@
 import sqlite3
 from datetime import date
-from typing import Literal
+from typing import Literal, Dict
 
 import requests
 from bs4 import BeautifulSoup, Tag
 
-from scraping import constants, helper, retrieve
+from tagesschauscraper import constants, helper, retrieve
 
 
 def create_url_for_news_archive(
-    date_: date, ressort: Literal["wirtschaft", "inland", "ausland", "all"] = "all"
+    date_: date, category: Literal["wirtschaft", "inland", "ausland", "all"] = "all"
 ) -> str:
     """
     Creating a url leading to the articles published on the specified date.
-    Additionally, the articles can be filtered by the ressort.
+    Additionally, the articles can be filtered by the category.
 
     Parameters
     ----------
     date_ : date
         Filter articles on date.
-    ressort : str, optional
-        Filter articles on ressort. Could be "wirtschaft", "inland", "ausland" or "all".
+    category : str, optional
+        Filter articles on category. Could be "wirtschaft", "inland", "ausland" or "all".
         By default, "all" is selected.
 
     Returns
@@ -31,18 +31,18 @@ def create_url_for_news_archive(
     Raises
     ------
     ValueError
-        When ressort is not defined.
+        When category is not defined.
     """
-    ressorts = ["wirtschaft", "inland", "ausland"]
+    categories = ["wirtschaft", "inland", "ausland"]
     date_pattern = "%Y-%m-%d"
     date_str = date_.strftime(date_pattern)
-    if ressort in ressorts:
-        return f"https://www.tagesschau.de/archiv/?datum={date_str}&ressort={ressort}"
-    elif ressort == "all":
+    if category in categories:
+        return f"https://www.tagesschau.de/archiv/?datum={date_str}&ressort={category}"
+    elif category == "all":
         return f"https://www.tagesschau.de/archiv/?datum={date_str}"
     else:
         raise ValueError(
-            f"Ressort {ressort} not defined. Ressort must be in {ressorts}"
+            f"category {category} not defined. category must be in {categories}"
         )
 
 
@@ -227,7 +227,7 @@ class Teaser:
         self.teaser_info.update(teaser_info)
         return teaser_info
 
-    def is_teaser_info_valid(self, teaser_info: dict) -> bool:
+    def is_teaser_info_valid(self, teaser_info: Dict[str, str]) -> bool:
         """
         Check if scraped information exists for all required attributes.
 

@@ -6,8 +6,8 @@ from typing import Literal
 import requests
 from bs4 import BeautifulSoup
 
-from scraping import helper, retrieve
-from scraping.tagesschau import (
+from tagesschauscraper import helper, retrieve
+from tagesschauscraper.tagesschau import (
     Archive,
     Article,
     TagesschauScraper,
@@ -18,28 +18,28 @@ from scraping.tagesschau import (
 
 class TestTagesschauScraper(unittest.TestCase):
     def setUp(self):
-        with open("data/tests/archive.html", "r") as f:
+        with open("tests/data/archive.html", "r") as f:
             markup = f.read()
         self.soup = BeautifulSoup(markup, "html.parser")
         self.tageschauScraper = TagesschauScraper()
 
     def test___extract_info_for_all_teaser(self):
         all_teaser = self.tageschauScraper._extract_info_for_all_teaser(self.soup)
-        with open("data/tests/all_teaser.json", "r") as f:
+        with open("tests/data/all_teaser.json", "r") as f:
             true_all_teaser = json.load(f)
         self.assertDictEqual(all_teaser, true_all_teaser)
 
     def test_scrape_teaser(self):
         url = "https://www.tagesschau.de/archiv/?datum=2022-03-01&ressort=wirtschaft"
         all_teaser = self.tageschauScraper.scrape_teaser(url)
-        with open("data/tests/all_teaser.json", "r") as f:
+        with open("tests/data/all_teaser.json", "r") as f:
             true_all_teaser = json.load(f)
         self.assertDictEqual(all_teaser, true_all_teaser)
 
 
 class TestTeaser(unittest.TestCase):
     def setUp(self):
-        with open("data/tests/teaser.html", "r") as f:
+        with open("tests/data/teaser.html", "r") as f:
             markup = f.read()
         self.soup = BeautifulSoup(markup, "html.parser")
         self.teaser = Teaser(self.soup)
@@ -147,7 +147,7 @@ class TestTeaser(unittest.TestCase):
 
 class TestArticle(unittest.TestCase):
     def setUp(self):
-        with open("data/tests/article.html", "r") as f:
+        with open("tests/data/article.html", "r") as f:
             markup = f.read()
         self.soup = BeautifulSoup(markup, "html.parser")
 
@@ -162,7 +162,7 @@ class TestArticle(unittest.TestCase):
 
 class TestArchive(unittest.TestCase):
     def setUp(self):
-        with open("data/tests/archive.html", "r") as f:
+        with open("tests/data/archive.html", "r") as f:
             markup = f.read()
         self.soup = BeautifulSoup(markup, "html.parser")
 
@@ -197,17 +197,18 @@ class TestCreateURL(unittest.TestCase):
         }
         date_ = date(2022, 3, 1)
         self.assertEqual(
-            create_url_for_news_archive(date_=date_, ressort="wirtschaft"),
+            create_url_for_news_archive(date_=date_, category="wirtschaft"),
             urls["wirtschaft"],
         )
         self.assertEqual(
-            create_url_for_news_archive(date_=date_, ressort="inland"), urls["inland"]
+            create_url_for_news_archive(date_=date_, category="inland"), urls["inland"]
         )
         self.assertEqual(
-            create_url_for_news_archive(date_=date_, ressort="ausland"), urls["ausland"]
+            create_url_for_news_archive(date_=date_, category="ausland"),
+            urls["ausland"],
         )
         self.assertEqual(
-            create_url_for_news_archive(date_=date_, ressort="all"), urls["all"]
+            create_url_for_news_archive(date_=date_, category="all"), urls["all"]
         )
 
 

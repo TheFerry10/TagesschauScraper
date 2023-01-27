@@ -1,0 +1,184 @@
+{
+    "teaser": [
+        {
+            "date": "2022-03-01 22:23:00",
+            "topline": "Deutliche Verluste",
+            "headline": "Der Krieg lastet auf der Wall Street",
+            "shorttext": "Die intensiven K\u00e4mpfe in der Ukraine und die Auswirkungen der Sanktionen verschreckten die US-Investoren.",
+            "link": "https://www.tagesschau.de/wirtschaft/finanzen/marktberichte/marktbericht-dax-dow-jones-213.html",
+            "tags": "B\u00f6rse,DAX,Dow Jones,Marktbericht",
+            "id": "d49cfb71130e46638dcfe2afe8d775ac9670a9a8"
+        },
+        {
+            "date": "2022-03-01 18:54:00",
+            "topline": "Pipeline-Projekt",
+            "headline": "Nordstream-Betreiber offenbar insolvent",
+            "shorttext": "Die Nord Stream 2 AG, die Schweizer Eigent\u00fcmergesellschaft der neuen Ostsee-Pipeline nach Russland, ist offenbar insolvent.",
+            "link": "https://www.tagesschau.de/wirtschaft/unternehmen/nord-stream-insolvenz-gazrom-gas-pipeline-russland-ukraine-103.html",
+            "tags": "Insolvenz,Nord Stream 2,Pipeline,Russland,Schweiz",
+            "id": "595aa643ed39edd3695b8401a99ce808afa539fb"
+        },
+        {
+            "date": "2022-03-01 18:52:00",
+            "topline": "Fehlende Teile wegen Ukraine-Kriegs",
+            "headline": "Autobauern drohen Produktionsausf\u00e4lle",
+            "shorttext": "Der anhaltende Krieg in der Ukraine bremst auch die deutsche Autoindustrie.",
+            "link": "https://www.tagesschau.de/wirtschaft/autobauern-drohen-produktionsausfaelle-101.html",
+            "tags": "Autowerke,BMW,Mercedes,Produktionsausf\u00e4lle,Ukraine,Ukraine-Krieg,VW",
+            "id": "914174596c3590784c903908f569c099475981f7"
+        },
+        {
+            "date": "2022-03-01 18:15:00",
+            "topline": "Von Aven bis Usmanow",
+            "headline": "Wer sind die sanktionierten Oligarchen?",
+            "shorttext": "Die EU hat ein Einreiseverbot gegen Kreml-treue Oligarchen verh\u00e4ngt und deren Verm\u00f6genswerte eingefroren.",
+            "link": "https://www.tagesschau.de/wirtschaft/wer-sind-die-sanktionierten-russen-oligarchen-101.html",
+            "tags": "Oligarchen,Putin,Rosneft,Russland,Sanktionen,TUI,Transneft,Ukraine",
+            "id": "440bd0b1a89c8e47f895cebd5056a5854fffded4"
+        },
+        {
+            "date": "2022-03-01 17:42:00",
+            "topline": "Strafma\u00dfnahmen gegen Russland",
+            "headline": "Sanktionen und drastische Worte aus Paris",
+            "shorttext": "Russlands Ex-Premier Medwedew drohte postwendend, aus Wirtschaftskriegen k\u00f6nnten reale Kriege erwachsen.",
+            "link": "https://www.tagesschau.de/wirtschaft/weltwirtschaft/le-maire-wirtschaftskrieg-ukraine-101.html",
+            "tags": "Bruno Le Maire,Frankreich,Russland,Ukraine,Wirtschaftssanktionen",
+            "id": "bdde3a187951f9f81da3511f0ced581a51714419"
+        },
+        {
+            "date": "2022-03-01 17:38:00",
+            "topline": "Beschluss der EU und der USA",
+            "headline": "Was bringt die Freigabe von \u00d6lreserven?",
+            "shorttext": "Angesichts des Ukraine-Kriegs geben EU und USA nationale \u00d6lreserven frei.",
+            "link": "https://www.tagesschau.de/wirtschaft/weltwirtschaft/oelreserve-freigabe-habeck-101.html",
+            "tags": "EU,Ukraine,\u00d6lpreis,\u00d6lreserven",
+            "id": "bc287eaa4d4fcb540384522e9abaf2d35d28eec3"
+        },
+        {
+            "date": "2022-03-01 16:21:00",
+            "topline": "Sozial- und Erziehungsdienst",
+            "headline": "Warnstreiks in Kitas am 8. M\u00e4rz",
+            "shorttext": "Am 8. M\u00e4rz will sie Forderungen f\u00fcr bessere Arbeitsbedingungen und eine bessere Bezahlung durchsetzen.",
+            "link": "https://www.tagesschau.de/wirtschaft/unternehmen/kita-warnstreik-101.html",
+            "tags": "Kita,Tarifkonflikt,Verdi,Warnstreik",
+            "id": "a0bc2ed588bc39cb2d9ddd0e4a5e5d049d25a3b3"
+        },
+        {
+            "date": "2022-03-01 16:15:00",
+            "topline": "Deutsche B\u00f6rse",
+            "headline": "Kein Handel mit russischen Papieren mehr",
+            "shorttext": "Au\u00dferdem rufen mehrere Banken zu einem Handelsboykott gegen russische Kreditinstitute auf.",
+            "link": "https://www.tagesschau.de/wirtschaft/finanzen/handel-russische-papiere-einstellung-deutsche-boerse-101.html",
+            "tags": "Aktien,Banken,B\u00f6rse,Russland,Sanktionen",
+            "id": "f41d4a2ae1a359a141fac88882d875ff529a7a29"
+        },
+        {
+            "date": "2022-03-01 16:13:00",
+            "topline": "Boykott russischer Produkte",
+            "headline": "Superm\u00e4rkte verbannen Wodka",
+            "shorttext": "Die Handelsketten REWE, Penny, Aldi und Netto wollen keine Produkte mehr verkaufen, die in Russland hergestellt worden sind.",
+            "link": "https://www.tagesschau.de/wirtschaft/unternehmen/supermaerkte-russland-produkte-krieg-101.html",
+            "tags": "Aldi,Boykott,Edeka,Einzelhandel,Lebensmittel,Netto,Penny,REWE,Russland,Sanktionen,Ukraine,Wodka",
+            "id": "dd87d68767666fd38025ce2d279433baea800a9d"
+        },
+        {
+            "date": "2022-03-01 15:30:00",
+            "topline": "Russlands Wirtschaft",
+            "headline": "Durch Sanktionen in die Rezession?",
+            "shorttext": "Westliche Sanktionen setzen Russland wirtschaftlich und finanziell unter Druck.",
+            "link": "https://www.tagesschau.de/wirtschaft/russland-wirtschaft-117.html",
+            "tags": "Russland,Sanktionen,Ukraine,Wirtschaft",
+            "id": "b62d10dc755944dc44b6cb9226526713a79c2c76"
+        },
+        {
+            "date": "2022-03-01 14:53:00",
+            "topline": "Pipeline-Projekt",
+            "headline": "Betreiber von Nord Stream 2 vor Pleite",
+            "shorttext": "Die Nord Stream 2 AG, die Schweizer Eigent\u00fcmergesellschaft der neuen Ostsee-Pipeline nach Russland, steht offenbar vor der Insolvenz.",
+            "link": "https://www.tagesschau.de/wirtschaft/unternehmen/nord-stream-insolvenz-gazrom-gas-pipeline-russland-ukraine-101.html",
+            "tags": "Erdgas,Gazprom,Nord Stream 2,Pipeline,Russland,Sanktionen,Ukraine",
+            "id": "811313b8524a7d1db277b552a12b14d89b6d322c"
+        },
+        {
+            "date": "2022-03-01 14:24:00",
+            "topline": "Teuerungsrate im Februar",
+            "headline": "Inflation steigt auf 5,1 Prozent",
+            "shorttext": "Nach einem leichten R\u00fcckgang im Januar ist die deutsche Inflationsrate im Februar wieder gestiegen.",
+            "link": "https://www.tagesschau.de/wirtschaft/finanzen/inflation-februar-101.html",
+            "tags": "Deutschland,Februar 2022,Inflation",
+            "id": "8d41271019efc1d1ee44e079a3de1a4870223aa9"
+        },
+        {
+            "date": "2022-03-01 14:10:00",
+            "topline": "Gef\u00fchlte Inflation",
+            "headline": "Warum sich die Teuerung schlimmer anf\u00fchlt",
+            "shorttext": "Die W\u00e4hrungsumstellung 2002 gilt als Geburtsstunde der gef\u00fchlten Inflation: Alle sprachen vom \"Teuro\".",
+            "link": "https://www.tagesschau.de/wirtschaft/verbraucher/gefuehlte-inflation-101.html",
+            "tags": "Inflation,Lebensmittel,Preise,Teuerung",
+            "id": "3051360acf8b808e7e98dea6d1ab567a9fee7135"
+        },
+        {
+            "date": "2022-03-01 13:01:00",
+            "topline": "Weltgr\u00f6\u00dfte Containerreederei",
+            "headline": "Maersk stoppt russische Transporte",
+            "shorttext": "Der Containerriese Maersk und andere gro\u00dfe Reedereien setzen wegen des Ukraine-Kriegs alle Lieferungen von und nach Russland aus.",
+            "link": "https://www.tagesschau.de/wirtschaft/weltwirtschaft/maersk-container-transport-logistik-russland-101.html",
+            "tags": "Handel,Maersk,Russland,Ukraine",
+            "id": "71786bd174f331c2158fdb2b2362594bb0e15546"
+        },
+        {
+            "date": "2022-03-01 11:07:00",
+            "topline": "Mastercard und Visa",
+            "headline": "Russische Finanzinstitute ausgesperrt",
+            "shorttext": "Auch die Kreditkartenanbieter Mastercard und Visa setzen die Sanktionen gegen Russland rasch um.",
+            "link": "https://www.tagesschau.de/wirtschaft/finanzen/mastercard-visa-russland-101.html",
+            "tags": "Mastercard,Russland,Sanktionen,Visa",
+            "id": "bfdbaae7096548fc05f61eb83848ff40b79dafdf"
+        },
+        {
+            "date": "2022-03-01 10:54:00",
+            "topline": "Infrastruktur-Vorstand",
+            "headline": "Pofalla verl\u00e4sst die Deutsche Bahn",
+            "shorttext": "Ex-Kanzleramtschef Ronald Pofalla gibt seinen Vorstandsposten bei der Deutschen Bahn mehr als drei Jahre vor Ende seines Vertrags auf.",
+            "link": "https://www.tagesschau.de/wirtschaft/unternehmen/pofalla-rueckzug-bahn-101.html",
+            "tags": "DB,Deutsche Bahn,Pofalla,Stuttgart 21",
+            "id": "6691c8cdeb968c9fb0dabed25af75eb4f38ec60d"
+        },
+        {
+            "date": "2022-03-01 10:04:00",
+            "topline": "Videokonferenzen",
+            "headline": "Zoom-Boom vorerst beendet",
+            "shorttext": "Durch die Corona-Pandemie ist Zoom zum Sinnbild f\u00fcr das Homeoffice geworden.",
+            "link": "https://www.tagesschau.de/wirtschaft/unternehmen/zoom-videokonferenz-telekommunikation-internet-101.html",
+            "tags": "Internet,Telekommunikation,Videokonferenzen,Zoom",
+            "id": "c44b3a26fb950efd5c501dfcf7377043f0de36b5"
+        },
+        {
+            "date": "2022-03-01 08:26:00",
+            "topline": "Online-Mode boomt",
+            "headline": "Zalando-Umsatz auf Rekordhoch",
+            "shorttext": "Europas gr\u00f6\u00dfter Online-Modeh\u00e4ndler Zalando hat im vergangenen Jahr erstmals einen Umsatz im zweistelligen Milliardenbereich erzielt.",
+            "link": "https://www.tagesschau.de/wirtschaft/unternehmen/zalaondo-umsatz-rekord-plattform-wachstum-ukraine-mode-101.html",
+            "tags": "Mode,Onlineh\u00e4ndler,Pandemie,Ukraine,Wachstum,Zalando",
+            "id": "2d97e32367933c31b21b579ddec821b7191d8f58"
+        },
+        {
+            "date": "2022-03-01 08:09:00",
+            "topline": "Verbindungen mit Russland",
+            "headline": "Wo Chinas Freundschaft aufh\u00f6rt",
+            "shorttext": "Nach dem russischen Angriff auf die Ukraine versucht China, sich nicht offen auf eine Seite zu stellen.",
+            "link": "https://www.tagesschau.de/wirtschaft/weltwirtschaft/china-russland-wirtschaft-101.html",
+            "tags": "China,Russland,Welthandel",
+            "id": "f473b45f6f3b645cfb46de396acf6b3b84ebeea7"
+        },
+        {
+            "date": "2022-03-01 05:00:00",
+            "topline": "Energieversorgung in Europa",
+            "headline": "Es droht die Verknappung",
+            "shorttext": "In Br\u00fcssel w\u00e4chst die Sorge um die europ\u00e4ische Energieversorgung.",
+            "link": "https://www.tagesschau.de/wirtschaft/unternehmen/europa-energieversorgung-preise-101.html",
+            "tags": "Energie,Europa,Russland",
+            "id": "b146ee38d2405cc3578d63ceb0c847dc4b29e4b6"
+        }
+    ]
+}

@@ -15,3 +15,4 @@ german_month_names = [
 ]
 
 data_dir = "data"
+log_dir = "logs"

@@ -4,4 +4,4 @@ install:
 
 .PHONY: test
 test:
-	pytest tests/
+	python -m pytest tests/
