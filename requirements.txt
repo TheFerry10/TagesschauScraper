@@ -1,3 +1,9 @@
-pytest
 requests
 beautifulsoup4
+black
+mypy
+mypy-extensions
+pip-tools
+pylint
+pytest
+pytest-cov

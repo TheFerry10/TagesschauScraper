@@ -1,12 +1,9 @@
 import sqlite3
 from dataclasses import dataclass
 
-import numpy as np
-import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from requests.models import Response
-from tqdm import tqdm
 
 
 def get_soup_from_url(url: str) -> BeautifulSoup:
@@ -40,11 +37,15 @@ class WebsiteTest:
         response = requests.get(url=self.url)
         self.soup = get_soup(response)
 
-    def is_element(self, name=None, attrs={}, recursive=True, string=None, **kwargs):
+    def is_element(
+        self, name=None, attrs={}, recursive=True, string=None, **kwargs
+    ):
         f"""
         Check if html element exists on website.
         """
-        if self.soup.find(name=None, attrs={}, recursive=True, string=None, **kwargs):
+        if self.soup.find(
+            name=None, attrs={}, recursive=True, string=None, **kwargs
+        ):
             return True
         else:
             return False

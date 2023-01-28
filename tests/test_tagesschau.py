@@ -1,12 +1,9 @@
 import json
 import unittest
 from datetime import date
-from typing import Literal
 
-import requests
 from bs4 import BeautifulSoup
 
-from tagesschauscraper import helper, retrieve
 from tagesschauscraper.tagesschau import (
     Archive,
     Article,
@@ -24,7 +21,9 @@ class TestTagesschauScraper(unittest.TestCase):
         self.tageschauScraper = TagesschauScraper()
 
     def test___extract_info_for_all_teaser(self):
-        all_teaser = self.tageschauScraper._extract_info_for_all_teaser(self.soup)
+        all_teaser = self.tageschauScraper._extract_info_for_all_teaser(
+            self.soup
+        )
         with open("tests/data/all_teaser.json", "r") as f:
             true_all_teaser = json.load(f)
         self.assertDictEqual(all_teaser, true_all_teaser)
@@ -72,13 +71,19 @@ class TestTeaser(unittest.TestCase):
             "link": "https://www.tagesschau.de/wirtschaft/unternehmen/nord-stream-insolvenz-gazrom-gas-pipeline-russland-ukraine-103.html",
             "tags": ",".join(
                 sorted(
-                    ["Nord Stream 2", "Insolvenz", "Schweiz", "Pipeline", "Russland"]
+                    [
+                        "Nord Stream 2",
+                        "Insolvenz",
+                        "Schweiz",
+                        "Pipeline",
+                        "Russland",
+                    ]
                 )
             ),
         }
 
-        enriched_teaser_info = self.teaser.enrich_teaser_info_with_article_tags(
-            teaser_info
+        enriched_teaser_info = (
+            self.teaser.enrich_teaser_info_with_article_tags(teaser_info)
         )
         self.assertDictEqual(enriched_teaser_info, true_enriched_teaser_info)
 
@@ -91,7 +96,13 @@ class TestTeaser(unittest.TestCase):
             "link": "https://www.tagesschau.de/wirtschaft/unternehmen/nord-stream-insolvenz-gazrom-gas-pipeline-russland-ukraine-103.html",
             "tags": ",".join(
                 sorted(
-                    ["Nord Stream 2", "Insolvenz", "Schweiz", "Pipeline", "Russland"]
+                    [
+                        "Nord Stream 2",
+                        "Insolvenz",
+                        "Schweiz",
+                        "Pipeline",
+                        "Russland",
+                    ]
                 )
             ),
         }
@@ -105,7 +116,13 @@ class TestTeaser(unittest.TestCase):
             "link": "https://www.tagesschau.de/wirtschaft/unternehmen/nord-stream-insolvenz-gazrom-gas-pipeline-russland-ukraine-103.html",
             "tags": ",".join(
                 sorted(
-                    ["Nord Stream 2", "Insolvenz", "Schweiz", "Pipeline", "Russland"]
+                    [
+                        "Nord Stream 2",
+                        "Insolvenz",
+                        "Schweiz",
+                        "Pipeline",
+                        "Russland",
+                    ]
                 )
             ),
         }
@@ -123,7 +140,13 @@ class TestTeaser(unittest.TestCase):
             "link": "https://www.tagesschau.de/wirtschaft/unternehmen/nord-stream-insolvenz-gazrom-gas-pipeline-russland-ukraine-103.html",
             "tags": ",".join(
                 sorted(
-                    ["Nord Stream 2", "Insolvenz", "Schweiz", "Pipeline", "Russland"]
+                    [
+                        "Nord Stream 2",
+                        "Insolvenz",
+                        "Schweiz",
+                        "Pipeline",
+                        "Russland",
+                    ]
                 )
             ),
         }
@@ -138,7 +161,13 @@ class TestTeaser(unittest.TestCase):
             "shorttext": "Die Nord Stream 2 AG, die Schweizer Eigentümergesellschaft der neuen Ostsee-Pipeline nach Russland,\n                    ist offenbar insolvent.",
             "tags": ",".join(
                 sorted(
-                    ["Nord Stream 2", "Insolvenz", "Schweiz", "Pipeline", "Russland"]
+                    [
+                        "Nord Stream 2",
+                        "Insolvenz",
+                        "Schweiz",
+                        "Pipeline",
+                        "Russland",
+                    ]
                 )
             ),
         }
@@ -155,7 +184,9 @@ class TestArticle(unittest.TestCase):
         article = Article(self.soup)
         article_tags = article.extract_article_tags()
         true_article_tags = {
-            "tags": ",".join(sorted(["Marktbericht", "Börse", "DAX", "Dow Jones"]))
+            "tags": ",".join(
+                sorted(["Marktbericht", "Börse", "DAX", "Dow Jones"])
+            )
         }
         self.assertDictEqual(article_tags, true_article_tags)
 
@@ -201,14 +232,16 @@ class TestCreateURL(unittest.TestCase):
             urls["wirtschaft"],
         )
         self.assertEqual(
-            create_url_for_news_archive(date_=date_, category="inland"), urls["inland"]
+            create_url_for_news_archive(date_=date_, category="inland"),
+            urls["inland"],
         )
         self.assertEqual(
             create_url_for_news_archive(date_=date_, category="ausland"),
             urls["ausland"],
         )
         self.assertEqual(
-            create_url_for_news_archive(date_=date_, category="all"), urls["all"]
+            create_url_for_news_archive(date_=date_, category="all"),
+            urls["all"],
         )
 
 

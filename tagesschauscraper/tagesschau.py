@@ -9,7 +9,8 @@ from tagesschauscraper import constants, helper, retrieve
 
 
 def create_url_for_news_archive(
-    date_: date, category: Literal["wirtschaft", "inland", "ausland", "all"] = "all"
+    date_: date,
+    category: Literal["wirtschaft", "inland", "ausland", "all"] = "all",
 ) -> str:
     """
     Creating a url leading to the articles published on the specified date.
@@ -77,15 +78,21 @@ class TagesschauScraper:
             )
 
     def _extract_info_for_all_teaser(self, soup: BeautifulSoup) -> dict:
-        self.teaser_element = {"class": "columns teaser-xs twelve teaser-xs__wide"}
+        self.teaser_element = {
+            "class": "columns teaser-xs twelve teaser-xs__wide"
+        }
         extracted_teaser_list = []
-        for teaser in soup.find_all(**self.teaser_element):
+        for teaser in soup.find_all(
+            class_="columns teaser-xs twelve teaser-xs__wide"
+        ):
             teaserObj = Teaser(soup=teaser)
             teaser_info = teaserObj.extract_info_from_teaser()
-            teaser_info_enriched = teaserObj.enrich_teaser_info_with_article_tags(
-                teaser_info
+            teaser_info_enriched = (
+                teaserObj.enrich_teaser_info_with_article_tags(teaser_info)
             )
-            teaser_info_processed = teaserObj.process_info(teaser_info_enriched)
+            teaser_info_processed = teaserObj.process_info(
+                teaser_info_enriched
+            )
             if teaserObj.is_teaser_info_valid(teaser_info_processed):
                 extracted_teaser_list.append(teaserObj.teaser_info)
         return {"teaser": extracted_teaser_list}
@@ -106,7 +113,7 @@ class Archive:
             BeautifulSoup object representing an element for a news teaser.
         """
         self.archive_soup = soup
-        self.archive_info = dict()
+        self.archive_info: Dict[str, str] = dict()
 
     def transform_date_to_date_in_headline(self, date_: date) -> str:
         year = date_.year
@@ -114,7 +121,9 @@ class Archive:
         day = date_.day
         return f"{day}. {constants.german_month_names[month]} {year}"
 
-    def transform_date_in_headline_to_date(self, date_in_headline: str) -> date:
+    def transform_date_in_headline_to_date(
+        self, date_in_headline: str
+    ) -> date:
         day_raw, month_raw, year_raw = date_in_headline.split()
         day = int(day_raw[:-1])
         month = constants.german_month_names.index(month_raw)
@@ -127,7 +136,9 @@ class Archive:
             "num_teaser": "ergebnisse__anzahl",
         }
         self.archive_info = {
-            name: retrieve.get_text_from_html(self.archive_soup, {"class_": html_tag})
+            name: retrieve.get_text_from_html(
+                self.archive_soup, {"class_": html_tag}
+            )
             for name, html_tag in name_html_mapping_text.items()
         }
         return self.archive_info
@@ -148,8 +159,14 @@ class Teaser:
             BeautifulSoup object representing an element for a news teaser.
         """
         self.teaser_soup = soup
-        self.teaser_info = dict()
-        self.required_attributes = {"date", "topline", "headline", "shorttext", "link"}
+        self.teaser_info: Dict[str, str] = dict()
+        self.required_attributes = {
+            "date",
+            "topline",
+            "headline",
+            "shorttext",
+            "link",
+        }
 
     def extract_info_from_teaser(self) -> dict:
         """
@@ -164,18 +181,20 @@ class Teaser:
         field_names_text = ["date", "topline", "headline", "shorttext"]
         field_names_link = ["link"]
         name_html_mapping = {
-            key: f"teaser-xs__{key}" for key in field_names_text + field_names_link
+            key: f"teaser-xs__{key}"
+            for key in field_names_text + field_names_link
         }
 
         for field_name, html_class_name in name_html_mapping.items():
-            tag = self.teaser_soup.find(**{"class_": html_class_name})
+            tag = self.teaser_soup.find(class_=html_class_name)
             if isinstance(tag, Tag):
                 if field_name in field_names_text:
                     self.teaser_info[field_name] = tag.get_text(
                         strip=True, separator=" "
                     )
                 elif field_name in field_names_link:
-                    self.teaser_info[field_name] = tag.get("href")
+                    if isinstance(tag.get("href"), str):
+                        self.teaser_info[field_name] = tag.get("href")  # type: ignore
                 else:
                     raise ValueError
 
@@ -223,7 +242,9 @@ class Teaser:
             Dictionary containing processed teaser information.
         """
         teaser_info["id"] = helper.get_hash_from_string(teaser_info["link"])
-        teaser_info["date"] = helper.transform_datetime_str(teaser_info["date"])
+        teaser_info["date"] = helper.transform_datetime_str(
+            teaser_info["date"]
+        )
         self.teaser_info.update(teaser_info)
         return teaser_info
 
@@ -257,11 +278,13 @@ class Article:
         self.tags_element = {"class": "taglist"}
 
     def extract_article_tags(self) -> dict:
-        tags_group = self.article_soup.find(**self.tags_element)
+        tags_group = self.article_soup.find(class_="taglist")
         if isinstance(tags_group, Tag):
             tags = [
                 tag.get_text(strip=True)
-                for tag in tags_group.find_all(class_="tag-btn tag-btn--light-grey")
+                for tag in tags_group.find_all(
+                    class_="tag-btn tag-btn--light-grey"
+                )
                 if hasattr(tag, "get_text")
             ]
         else:

@@ -1,16 +1,18 @@
-FROM python:3.9-slim-bullseye
+FROM python:3.9-slim-buster
 
 RUN apt-get update && \
-    apt-get -y install make git jupyter black
+    apt-get install -y --no-install-recommends \
+        python-dev \
+        gcc \
+        musl-dev \
+        make \
+        git \
+        openssh-client \
+    && rm -rf /var/lib/apt/lists/*
 
-ENV VIRTUAL_ENV=/opt/venv
-RUN python3 -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install dependencies:
 COPY requirements.txt .
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
 
 # Copy the application code into the container
 COPY . .
