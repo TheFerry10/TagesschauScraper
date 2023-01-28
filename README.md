@@ -62,7 +62,8 @@ The result saved in json format looks the following (only a snippet):
 If you'd like to contribute to TagesschauScraper, please fork the repository and make changes as you'd like. Pull requests are welcome.
 
 ## License
-TagesschauScraper is licensed under the MIT license.
+TagesschauScraper is licensed under the GPL-3.0 license.
+
 
 ## Disclaimer
 Please note that this is a scraping tool, and using it to scrape website data without the website owner's consent may be against their terms of service. Use at your own risk.
