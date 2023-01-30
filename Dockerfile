@@ -8,8 +8,9 @@ RUN apt-get update && \
         make \
         git \
         openssh-client \
+        mypy \
+        pandoc \
     && rm -rf /var/lib/apt/lists/*
-
 
 # Install dependencies:
 COPY requirements.txt .
@@ -17,5 +18,3 @@ COPY requirements.txt .
 # Copy the application code into the container
 COPY . .
 CMD [ "/bin/bash" ]
-
-

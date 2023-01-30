@@ -1,6 +1,8 @@
 PYTHON=python3.9
 ENV_NAME=.env
-# export PYTHONPATH=src
+SHELL := /bin/bash
+export PYTHONPATH=.
+
 
 .PHONY: clean
 clean:
@@ -18,20 +20,28 @@ test:
 	$(ENV_NAME)/bin/python -m doctest tests/*.py
 	$(ENV_NAME)/bin/python -m pytest tests/*.py
 
+.PHONY: build
+build:
+	$(ENV_NAME)/bin/python setup.py sdist bdist_wheel
+
 .PHONY: typehint
 typehint:
-	mypy tagesschauscraper tests
+	mypy tagesschauscraper tests examples
 
-.PHONY: format
+.PHONY: format 
 format:
-	black --line-length=79 tagesschauscraper tests
+	black --line-length=79 tagesschauscraper tests examples
 
 .PHONY: lint
-lint: 
-	black --check --line-length=79 tagesschauscraper tests
+lint:
+	black --check --line-length=79 tagesschauscraper tests examples
 
 .PHONY: checklist
 checklist: typehint format test
+
+.PHONY: convert_readme
+convert_readme:
+	pandoc -f markdown -t rst -o README.rst README.md
 	
 
 
