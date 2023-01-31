@@ -2,6 +2,12 @@
 
 A library for scraping the German news archive of Tagesschau.de
 
+## Install
+Tagesschauscraper is available on PyPI:
+```
+$ pip install tagesschauscraper
+```
+
 ## Usage
 
 Here's an example of how to use the library to scrape teaser info from the Tagesschau archive:
