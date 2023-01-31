@@ -2,6 +2,7 @@ requests
 beautifulsoup4
 types-requests
 types-beautifulsoup4
+flake8
 black
 mypy
 mypy-extensions

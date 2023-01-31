@@ -1,6 +1,3 @@
-import sqlite3
-from dataclasses import dataclass
-
 import requests
 from bs4 import BeautifulSoup
 from requests.models import Response
@@ -40,7 +37,7 @@ class WebsiteTest:
     def is_element(
         self, name=None, attrs={}, recursive=True, string=None, **kwargs
     ):
-        f"""
+        """
         Check if html element exists on website.
         """
         if self.soup.find(

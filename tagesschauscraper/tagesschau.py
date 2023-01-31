@@ -21,7 +21,8 @@ def create_url_for_news_archive(
     date_ : date
         Filter articles on date.
     category : str, optional
-        Filter articles on category. Could be "wirtschaft", "inland", "ausland" or "all".
+        Filter articles on category. Could be "wirtschaft", "inland",
+        "ausland" or "all".
         By default, "all" is selected.
 
     Returns
@@ -43,7 +44,8 @@ def create_url_for_news_archive(
         return f"https://www.tagesschau.de/archiv/?datum={date_str}"
     else:
         raise ValueError(
-            f"category {category} not defined. category must be in {categories}"
+            f"category {category} not defined. category must be in"
+            f" {categories}"
         )
 
 
@@ -74,7 +76,8 @@ class TagesschauScraper:
             return self._extract_info_for_all_teaser(websiteTest.soup)
         else:
             raise ValueError(
-                f"HTML element with specifications {self.validation_element} cannot be found in URL {url}"
+                f"HTML element with specifications {self.validation_element}  "
+                f"              cannot be found in URL {url}"
             )
 
     def _extract_info_for_all_teaser(self, soup: BeautifulSoup) -> dict:
@@ -171,7 +174,8 @@ class Teaser:
     def extract_info_from_teaser(self) -> dict:
         """
         Extracts structured information from a teaser element.
-        The extracted elements are: date, topline, headline, shorttext and link to the corresponding article.
+        The extracted elements are: date, topline, headline, shorttext and
+        link to the corresponding article.
 
         Returns
         -------
@@ -195,8 +199,8 @@ class Teaser:
                 elif field_name in field_names_link:
                     if isinstance(tag.get("href"), str):
                         self.teaser_info[field_name] = tag.get("href")  # type: ignore
-                else:
-                    raise ValueError
+                    else:
+                        raise ValueError
 
         return self.teaser_info
 
@@ -212,7 +216,8 @@ class Teaser:
         Returns
         -------
         dict
-            Dictionary containing news teaser information enriched by article tags.
+            Dictionary containing news teaser information enriched by article
+            tags.
         """
         article_link = teaser_info["link"]
         try:

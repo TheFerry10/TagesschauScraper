@@ -9,19 +9,24 @@ import argparse
 import logging
 import time
 import os
-from datetime import date, datetime
+from datetime import datetime
 from tagesschauscraper import constants, helper, tagesschau
 
 # Arguemnt parsing
 parser = argparse.ArgumentParser(
     prog="TagesschauScraper",
-    description="This script scrapes news teaser from Tagesschau.de. The scraped news teaser are filtered by publishing date and news category.",
+    description=(
+        "This script scrapes news teaser from Tagesschau.de. The scraped news"
+        " teaser are filtered by publishing date and news category."
+    ),
 )
 parser.add_argument(
     "date",
     metavar="d",
     type=str,
-    help="Filter teaser by publishing date. Accepted date format is YYYY-MM-DD",
+    help=(
+        "Filter teaser by publishing date. Accepted date format is YYYY-MM-DD"
+    ),
 )
 parser.add_argument(
     "--category",
@@ -61,7 +66,7 @@ tagesschauScraper = tagesschau.TagesschauScraper()
 url = tagesschau.create_url_for_news_archive(date_, category=category)
 logging.info(f"Scraping teaser from URL {url}")
 teaser = tagesschauScraper.scrape_teaser(url)
-logging.info(f"Scraping terminated.")
+logging.info("Scraping terminated.")
 
 dateDirectoryTreeCreator = helper.DateDirectoryTreeCreator(date_)
 file_path = os.path.join(
@@ -72,6 +77,6 @@ file_path = os.path.join(
 )
 logging.info(f"Save scraped teaser to file {file_path}")
 helper.save_to_json(teaser, file_path)
-logging.info(f"Done.")
+logging.info("Done.")
 end_time = time.time()
 logging.info(f"Execution time: {end_time - start_time:.2f} seconds")

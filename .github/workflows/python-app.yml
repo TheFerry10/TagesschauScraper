@@ -26,6 +26,15 @@ jobs:
     - name: Install dependencies
       run: |
         make setup
-    - name: typehint, format, test
+    - name: typehint
       run: |
-        make checklist
+        make typehint
+    - name: format
+      run: |
+        make format
+    - name: lint
+      run: |
+        make lint
+    - name: test
+      run: |
+        make test

@@ -30,14 +30,14 @@ typehint:
 
 .PHONY: format 
 format:
-	$(ENV_NAME)/bin/python -m black --line-length=79 tagesschauscraper tests examples
+	$(ENV_NAME)/bin/python -m black --line-length=79 --preview tagesschauscraper tests examples
 
 .PHONY: lint
 lint:
-	$(ENV_NAME)/bin/python -m black --check --line-length=79 tagesschauscraper tests examples
+	$(ENV_NAME)/bin/python -m flake8 tagesschauscraper tests examples --ignore=E501 --max-line-length=79
 
 .PHONY: checklist
-checklist: typehint format test
+checklist: typehint format lint test
 
 .PHONY: convert_readme
 convert_readme:

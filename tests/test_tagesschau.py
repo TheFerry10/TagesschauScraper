@@ -49,7 +49,11 @@ class TestTeaser(unittest.TestCase):
             "date": "01.03.2022 - 18:54 Uhr",
             "topline": "Pipeline-Projekt",
             "headline": "Nordstream-Betreiber offenbar insolvent",
-            "shorttext": "Die Nord Stream 2 AG, die Schweizer Eigentümergesellschaft der neuen Ostsee-Pipeline nach Russland,\n                    ist offenbar insolvent.",
+            "shorttext": (
+                "Die Nord Stream 2 AG, die Schweizer Eigentümergesellschaft"
+                " der neuen Ostsee-Pipeline nach Russland,\n                  "
+                "  ist offenbar insolvent."
+            ),
             "link": "https://www.tagesschau.de/wirtschaft/unternehmen/nord-stream-insolvenz-gazrom-gas-pipeline-russland-ukraine-103.html",
         }
         self.assertDictEqual(teaser_info, true_teaser_info)
@@ -59,7 +63,11 @@ class TestTeaser(unittest.TestCase):
             "date": "01.03.2022 - 18:54 Uhr",
             "topline": "Pipeline-Projekt",
             "headline": "Nordstream-Betreiber offenbar insolvent",
-            "shorttext": "Die Nord Stream 2 AG, die Schweizer Eigentümergesellschaft der neuen Ostsee-Pipeline nach Russland,\n                    ist offenbar insolvent.",
+            "shorttext": (
+                "Die Nord Stream 2 AG, die Schweizer Eigentümergesellschaft"
+                " der neuen Ostsee-Pipeline nach Russland,\n                  "
+                "  ist offenbar insolvent."
+            ),
             "link": "https://www.tagesschau.de/wirtschaft/unternehmen/nord-stream-insolvenz-gazrom-gas-pipeline-russland-ukraine-103.html",
         }
 
@@ -67,7 +75,11 @@ class TestTeaser(unittest.TestCase):
             "date": "01.03.2022 - 18:54 Uhr",
             "topline": "Pipeline-Projekt",
             "headline": "Nordstream-Betreiber offenbar insolvent",
-            "shorttext": "Die Nord Stream 2 AG, die Schweizer Eigentümergesellschaft der neuen Ostsee-Pipeline nach Russland,\n                    ist offenbar insolvent.",
+            "shorttext": (
+                "Die Nord Stream 2 AG, die Schweizer Eigentümergesellschaft"
+                " der neuen Ostsee-Pipeline nach Russland,\n                  "
+                "  ist offenbar insolvent."
+            ),
             "link": "https://www.tagesschau.de/wirtschaft/unternehmen/nord-stream-insolvenz-gazrom-gas-pipeline-russland-ukraine-103.html",
             "tags": ",".join(
                 sorted(
@@ -92,7 +104,11 @@ class TestTeaser(unittest.TestCase):
             "date": "01.03.2022 - 18:54 Uhr",
             "topline": "Pipeline-Projekt",
             "headline": "Nordstream-Betreiber offenbar insolvent",
-            "shorttext": "Die Nord Stream 2 AG, die Schweizer Eigentümergesellschaft der neuen Ostsee-Pipeline nach Russland,\n                    ist offenbar insolvent.",
+            "shorttext": (
+                "Die Nord Stream 2 AG, die Schweizer Eigentümergesellschaft"
+                " der neuen Ostsee-Pipeline nach Russland,\n                  "
+                "  ist offenbar insolvent."
+            ),
             "link": "https://www.tagesschau.de/wirtschaft/unternehmen/nord-stream-insolvenz-gazrom-gas-pipeline-russland-ukraine-103.html",
             "tags": ",".join(
                 sorted(
@@ -112,7 +128,11 @@ class TestTeaser(unittest.TestCase):
             "date": "2022-03-01 18:54:00",
             "topline": "Pipeline-Projekt",
             "headline": "Nordstream-Betreiber offenbar insolvent",
-            "shorttext": "Die Nord Stream 2 AG, die Schweizer Eigentümergesellschaft der neuen Ostsee-Pipeline nach Russland,\n                    ist offenbar insolvent.",
+            "shorttext": (
+                "Die Nord Stream 2 AG, die Schweizer Eigentümergesellschaft"
+                " der neuen Ostsee-Pipeline nach Russland,\n                  "
+                "  ist offenbar insolvent."
+            ),
             "link": "https://www.tagesschau.de/wirtschaft/unternehmen/nord-stream-insolvenz-gazrom-gas-pipeline-russland-ukraine-103.html",
             "tags": ",".join(
                 sorted(
@@ -136,7 +156,11 @@ class TestTeaser(unittest.TestCase):
             "date": "2022-03-01 18:54:00",
             "topline": "Pipeline-Projekt",
             "headline": "Nordstream-Betreiber offenbar insolvent",
-            "shorttext": "Die Nord Stream 2 AG, die Schweizer Eigentümergesellschaft der neuen Ostsee-Pipeline nach Russland,\n                    ist offenbar insolvent.",
+            "shorttext": (
+                "Die Nord Stream 2 AG, die Schweizer Eigentümergesellschaft"
+                " der neuen Ostsee-Pipeline nach Russland,\n                  "
+                "  ist offenbar insolvent."
+            ),
             "link": "https://www.tagesschau.de/wirtschaft/unternehmen/nord-stream-insolvenz-gazrom-gas-pipeline-russland-ukraine-103.html",
             "tags": ",".join(
                 sorted(
@@ -158,7 +182,11 @@ class TestTeaser(unittest.TestCase):
             "date": "2022-03-01 18:54:00",
             "topline": "Pipeline-Projekt",
             "headline": "Nordstream-Betreiber offenbar insolvent",
-            "shorttext": "Die Nord Stream 2 AG, die Schweizer Eigentümergesellschaft der neuen Ostsee-Pipeline nach Russland,\n                    ist offenbar insolvent.",
+            "shorttext": (
+                "Die Nord Stream 2 AG, die Schweizer Eigentümergesellschaft"
+                " der neuen Ostsee-Pipeline nach Russland,\n                  "
+                "  ist offenbar insolvent."
+            ),
             "tags": ",".join(
                 sorted(
                     [

@@ -58,9 +58,11 @@ class DateDirectoryTreeCreator:
         ----------
         date_ : date, Provided date object
         date_pattern : str, optional
-            The date pattern describes the directory structure, by default "%Y/%m"
+            The date pattern describes the directory structure, by default
+            "%Y/%m"
         data_dir : str, optional
-            The base directory where the directory tree will be generated, by default constants.data_dir
+            The base directory where the directory tree will be generated, by
+            default constants.data_dir
         """
         self.date_ = date_
         self.make_dir_tree_from_date(date_pattern, data_dir)
@@ -74,9 +76,11 @@ class DateDirectoryTreeCreator:
         Parameters
         ----------
         date_pattern : str, optional
-            The date pattern describes the directory structure, by default "%Y/%m"
+            The date pattern describes the directory structure, by default
+            "%Y/%m"
         data_dir : str, optional
-            The base directory where the directory tree will be generated, by default constants.data_dir
+            The base directory where the directory tree will be generated,
+            by default constants.data_dir
         """
         self.path = os.path.join(data_dir, self.date_.strftime(date_pattern))
         os.makedirs(self.path, exist_ok=True)
