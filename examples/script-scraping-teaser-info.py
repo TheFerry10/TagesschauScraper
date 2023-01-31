@@ -7,6 +7,7 @@ Scraping teaser information for a specified date and news category. The script c
 
 import argparse
 import logging
+import time
 import os
 from datetime import date, datetime
 from tagesschauscraper import constants, helper, tagesschau
@@ -46,6 +47,9 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
+
+start_time = time.time()
+
 input_date_pattern = "%Y-%m-%d"
 date_ = datetime.strptime(args.date, input_date_pattern).date()
 category = args.category
@@ -63,9 +67,11 @@ dateDirectoryTreeCreator = helper.DateDirectoryTreeCreator(date_)
 file_path = os.path.join(
     dateDirectoryTreeCreator.path,
     helper.create_file_name_from_date(
-        date_, suffix=category + "_", extension=".json"
+        date_, suffix="_" + category, extension=".json"
     ),
 )
 logging.info(f"Save scraped teaser to file {file_path}")
 helper.save_to_json(teaser, file_path)
 logging.info(f"Done.")
+end_time = time.time()
+logging.info(f"Execution time: {end_time - start_time:.2f} seconds")
