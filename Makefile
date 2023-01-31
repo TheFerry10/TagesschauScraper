@@ -26,15 +26,15 @@ build:
 
 .PHONY: typehint
 typehint:
-	mypy tagesschauscraper tests examples
+	$(ENV_NAME)/bin/python -m mypy tagesschauscraper tests examples
 
 .PHONY: format 
 format:
-	black --line-length=79 tagesschauscraper tests examples
+	$(ENV_NAME)/bin/python -m black --line-length=79 tagesschauscraper tests examples
 
 .PHONY: lint
 lint:
-	black --check --line-length=79 tagesschauscraper tests examples
+	$(ENV_NAME)/bin/python -m black --check --line-length=79 tagesschauscraper tests examples
 
 .PHONY: checklist
 checklist: typehint format test
