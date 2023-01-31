@@ -1,5 +1,7 @@
 requests
 beautifulsoup4
+types-requests
+types-beautifulsoup4
 black
 mypy
 mypy-extensions

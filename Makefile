@@ -26,7 +26,7 @@ build:
 
 .PHONY: typehint
 typehint:
-	$(ENV_NAME)/bin/python -m mypy --ignore-missing-imports tagesschauscraper tests examples
+	$(ENV_NAME)/bin/python -m mypy tagesschauscraper tests examples
 
 .PHONY: format 
 format:
