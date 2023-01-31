@@ -26,7 +26,11 @@ jobs:
     - name: Install dependencies
       run: |
         make setup
-        source .env/bin/activate
+    - name: Activate virtual env
+      run: |
+        echo "Activating virtual environment"
+        source "${{ env.python }}/bin/activate"
+        echo "Virtual environment activated"
     - name: typehint, format test
       run: |
         make checklist
