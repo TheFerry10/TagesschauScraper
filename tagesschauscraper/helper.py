@@ -49,7 +49,7 @@ class DateDirectoryTreeCreator:
         self,
         date_: date,
         date_pattern: str = "%Y/%m",
-        data_dir: str = constants.data_dir,
+        root_dir: str = ".",
     ) -> None:
         """
         Initialize parameters and make the directory tree.
@@ -60,30 +60,55 @@ class DateDirectoryTreeCreator:
         date_pattern : str, optional
             The date pattern describes the directory structure, by default
             "%Y/%m"
-        data_dir : str, optional
+        root_dir : str, optional
             The base directory where the directory tree will be generated, by
-            default constants.data_dir
+            default current directory ('.').
         """
+        self.date_pattern = date_pattern
         self.date_ = date_
-        self.make_dir_tree_from_date(date_pattern, data_dir)
+        self.root_dir = root_dir
 
-    def make_dir_tree_from_date(
-        self, date_pattern: str = "%Y/%m", data_dir: str = constants.data_dir
-    ) -> None:
+    def create_file_path_from_date(
+        self, date_pattern: Union[str, None] = None, root_dir: Union[str, None] = None) -> str:
         """
-        Make a hirachical directory tree from the given date object.
+        Create a hierarchical file path from the given date object without creating directories.
 
         Parameters
         ----------
         date_pattern : str, optional
-            The date pattern describes the directory structure, by default
-            "%Y/%m"
-        data_dir : str, optional
-            The base directory where the directory tree will be generated,
-            by default constants.data_dir
+            The date pattern describes the directory structure. 
+            Default date pattern from class initialization will be used when no pattern is provided.
+        root_dir : str, optional
+            The base directory where the directory tree will be generated.
+            Default root directory from class initialization will be used when no directory is provided.
         """
-        self.path = os.path.join(data_dir, self.date_.strftime(date_pattern))
-        os.makedirs(self.path, exist_ok=True)
+        if date_pattern is None:
+            date_pattern = self.date_pattern
+        if root_dir is None:
+            root_dir = self.root_dir
+        self.file_path = os.path.join(root_dir, self.date_.strftime(date_pattern))
+        return self.file_path
+        
+        
+    def make_dir_tree_from_date(
+        self, date_pattern: Union[str, None] = None, root_dir: Union[str, None] = None) -> None:
+        """
+        Make a hierarchical directory tree from the given date object.
+
+        Parameters
+        ----------
+        date_pattern : str, optional
+            The date pattern describes the directory structure. 
+            Default date pattern from class initialization will be used when no pattern is provided.
+        root_dir : str, optional
+            The base directory where the directory tree will be generated.
+            Default root directory from class initialization will be used when no directory is provided.
+        """
+        file_path = self.create_file_path_from_date(date_pattern, root_dir)
+        self.make_dir_tree_from_file_path(file_path)
+        
+    def make_dir_tree_from_file_path(self, file_path: str) -> None:
+        os.makedirs(file_path, exist_ok=True)
 
 
 def create_file_name_from_date(

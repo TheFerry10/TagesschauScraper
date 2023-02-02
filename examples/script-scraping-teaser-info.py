@@ -70,7 +70,7 @@ logging.info("Scraping terminated.")
 
 dateDirectoryTreeCreator = helper.DateDirectoryTreeCreator(date_)
 file_path = os.path.join(
-    dateDirectoryTreeCreator.path,
+    dateDirectoryTreeCreator.file_path,
     helper.create_file_name_from_date(
         date_, suffix="_" + category, extension=".json"
     ),
