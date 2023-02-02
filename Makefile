@@ -22,7 +22,10 @@ test:
 
 .PHONY: build
 build:
+	pandoc -f markdown -t rst -o README.rst README.md
 	$(ENV_NAME)/bin/python setup.py sdist bdist_wheel
+	rm README.rst
+
 
 .PHONY: typehint
 typehint:
