@@ -4,8 +4,6 @@ import os
 from datetime import date, datetime
 from typing import Union
 
-from tagesschauscraper import constants
-
 
 def transform_datetime_str(datetime_string: str) -> str:
     """
@@ -69,14 +67,17 @@ class DateDirectoryTreeCreator:
         self.root_dir = root_dir
 
     def create_file_path_from_date(
-        self, date_pattern: Union[str, None] = None, root_dir: Union[str, None] = None) -> str:
+        self,
+        date_pattern: Union[str, None] = None,
+        root_dir: Union[str, None] = None,
+    ) -> str:
         """
         Create a hierarchical file path from the given date object without creating directories.
 
         Parameters
         ----------
         date_pattern : str, optional
-            The date pattern describes the directory structure. 
+            The date pattern describes the directory structure.
             Default date pattern from class initialization will be used when no pattern is provided.
         root_dir : str, optional
             The base directory where the directory tree will be generated.
@@ -86,19 +87,23 @@ class DateDirectoryTreeCreator:
             date_pattern = self.date_pattern
         if root_dir is None:
             root_dir = self.root_dir
-        self.file_path = os.path.join(root_dir, self.date_.strftime(date_pattern))
+        self.file_path = os.path.join(
+            root_dir, self.date_.strftime(date_pattern)
+        )
         return self.file_path
-        
-        
+
     def make_dir_tree_from_date(
-        self, date_pattern: Union[str, None] = None, root_dir: Union[str, None] = None) -> None:
+        self,
+        date_pattern: Union[str, None] = None,
+        root_dir: Union[str, None] = None,
+    ) -> None:
         """
         Make a hierarchical directory tree from the given date object.
 
         Parameters
         ----------
         date_pattern : str, optional
-            The date pattern describes the directory structure. 
+            The date pattern describes the directory structure.
             Default date pattern from class initialization will be used when no pattern is provided.
         root_dir : str, optional
             The base directory where the directory tree will be generated.
@@ -106,7 +111,7 @@ class DateDirectoryTreeCreator:
         """
         file_path = self.create_file_path_from_date(date_pattern, root_dir)
         self.make_dir_tree_from_file_path(file_path)
-        
+
     def make_dir_tree_from_file_path(self, file_path: str) -> None:
         os.makedirs(file_path, exist_ok=True)
 
