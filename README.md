@@ -18,6 +18,7 @@ from datetime import date
 from tagesschauscraper import constants, helper, tagesschau
 
 # Scraping teaser published on <date_> and in specific news category  
+DATA_DIR = "data"
 date_ = date(2022,3,1)
 category = "wirtschaft"
 
@@ -27,11 +28,24 @@ url = tagesschau.create_url_for_news_archive(date_, category=category)
 teaser = tagesschauScraper.scrape_teaser(url)
 
 # Save output in a hierarchical directory tree
-dateDirectoryTreeCreator = helper.DateDirectoryTreeCreator(date_)
-file_path = os.path.join(dateDirectoryTreeCreator.path, helper.create_file_name_from_date(date_, extension='.json'))
-helper.save_to_json(teaser, file_path)
+if not os.path.isdir(DATA_DIR):
+    os.mkdir(DATA_DIR)
+dateDirectoryTreeCreator = helper.DateDirectoryTreeCreator(
+    date_, root_dir=DATA_DIR
+)
+file_path = dateDirectoryTreeCreator.create_file_path_from_date()
+dateDirectoryTreeCreator.make_dir_tree_from_file_path(file_path)
+file_name_and_path = os.path.join(
+    file_path,
+    helper.create_file_name_from_date(
+        date_, suffix="_" + category, extension=".json"
+    ),
+)
+logging.info(f"Save scraped teaser to file {file_name_and_path}")
+helper.save_to_json(teaser, file_name_and_path)
+
 ```
-The result saved in json format looks the following (only a snippet):
+The result saved in "data/2022/03/2022-03-01_wirtschaft.json". Json document looks the following (only a snippet):
 ```
 {
     "teaser": [
