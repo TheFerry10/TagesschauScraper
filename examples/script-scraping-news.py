@@ -27,7 +27,8 @@ parser.add_argument(
     metavar="d",
     type=str,
     help=(
-        "Filter news article by publishing date. Accepted date format is YYYY-MM-DD"
+        "Filter news article by publishing date."
+        " Accepted date format is YYYY-MM-DD"
     ),
 )
 parser.add_argument(

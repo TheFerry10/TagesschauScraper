@@ -10,7 +10,7 @@ import argparse
 import logging
 import time
 import os
-from datetime import datetime, date
+from datetime import datetime
 from tagesschauscraper import helper, tagesschau
 from tagesschauscraper.tagesschau import ARCHIVE_URL
 
@@ -83,7 +83,8 @@ end_date = datetime.strptime(args.end_date, input_date_pattern).date()
 dates = helper.get_date_range(start_date=start_date, end_date=end_date)
 
 logging.info(
-    f"Initialize scraping for date range ({args.start_date}, {args.end_date}) and category {args.category}"
+    f"Initialize scraping for date range ({args.start_date}, {args.end_date})"
+    " and category {args.category}"
 )
 archiveFilters = [
     tagesschau.ArchiveFilter({"date": date_, "category": args.category})

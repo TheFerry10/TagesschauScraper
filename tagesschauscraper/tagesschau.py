@@ -1,10 +1,9 @@
 import sqlite3
 from datetime import date
-from typing import Literal, Dict, Union
+from typing import Dict, Union
 import requests
 from bs4 import BeautifulSoup, Tag
 from tagesschauscraper import constants, helper, retrieve
-from dataclasses import dataclass
 
 ARCHIVE_URL = "https://www.tagesschau.de/archiv/"
 NEWS_CATEGORIES = ["wirtschaft", "inland", "ausland"]
