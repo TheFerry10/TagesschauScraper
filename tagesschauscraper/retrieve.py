@@ -29,14 +29,12 @@ class WebsiteTest:
     Testing if a website works as expected.
     """
 
-    def __init__(self, url):
-        self.url = url
-        response = requests.get(url=self.url)
+    def __init__(self, response: requests.Response) -> None:
         self.soup = get_soup(response)
 
     def is_element(
         self, name=None, attrs={}, recursive=True, string=None, **kwargs
-    ):
+    ) -> bool:
         """
         Check if html element exists on website.
         """
@@ -55,12 +53,9 @@ class WebsiteTest:
         recursive=True,
         string=None,
         **kwargs,
-    ):
-        f"""
+    ) -> bool:
+        """
         Check if text is in html element.
-
-        Docstring for bs4 function find:
-        {self.soup.find.__doc__}
         """
         result = self.soup.find(name, attrs, recursive, string, **kwargs)
         if result:

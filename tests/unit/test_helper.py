@@ -1,13 +1,13 @@
 import os
 import shutil
 import unittest
-import datetime
+from datetime import date, datetime
 from tagesschauscraper import helper
 
 
 class TestDateDirectoryTreeCreator(unittest.TestCase):
     def setUp(self) -> None:
-        date_ = datetime.date(2022, 1, 12)
+        date_ = date(2022, 1, 12)
         root_dir = "tests/tmp"
         self.date_ = date_
         self.root_dir = root_dir
@@ -41,7 +41,7 @@ class TestDateDirectoryTreeCreator(unittest.TestCase):
 
 class TestCreateFileNameFromDate(unittest.TestCase):
     def test_create_file_name_from_date(self):
-        date_ = datetime.date(2022, 1, 12)
+        date_ = date(2022, 1, 12)
         true_file_name = "prefix_2022-01-12_suffix.json"
         self.assertEqual(
             true_file_name,
@@ -51,7 +51,7 @@ class TestCreateFileNameFromDate(unittest.TestCase):
         )
 
     def test_create_file_name_from_datetime(self):
-        datetime_ = datetime.datetime(2022, 1, 12, 11, 12, 30)
+        datetime_ = datetime(2022, 1, 12, 11, 12, 30)
         true_file_name = "prefix_2022-01-12T11:12:30_suffix.json"
         self.assertEqual(
             true_file_name,
@@ -69,6 +69,20 @@ class TestNormalizeDatetime(unittest.TestCase):
         self.assertEqual(
             helper.transform_datetime_str("30.01.2021 - 18:04 Uhr"),
             "2021-01-30 18:04:00",
+        )
+
+
+class TestDateRange(unittest.TestCase):
+    def test_get_date_range(self):
+        expected_result = [
+            date(2022, 1, 1),
+            date(2022, 1, 2),
+            date(2022, 1, 3),
+            date(2022, 1, 4),
+        ]
+        self.assertListEqual(
+            helper.get_date_range(date(2022, 1, 1), date(2022, 1, 5)),
+            expected_result,
         )
 
 

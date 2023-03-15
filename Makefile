@@ -1,6 +1,7 @@
 PYTHON=python3.9
 ENV_NAME=.env
 SHELL := /bin/bash
+DIRS = examples tagesschauscraper tests
 export PYTHONPATH=.
 
 
@@ -15,10 +16,18 @@ setup:
 	$(ENV_NAME)/bin/python -m pip install --upgrade pip
 	$(ENV_NAME)/bin/python -m pip install -r requirements.txt
 
+.PHONY: unittest
+unittest:
+	$(ENV_NAME)/bin/python -m doctest tests/unit/*.py
+	$(ENV_NAME)/bin/python -m pytest tests/unit/*.py
+
+.PHONY: integrationtest
+integrationtest:
+	$(ENV_NAME)/bin/python -m doctest tests/integration/*.py
+	$(ENV_NAME)/bin/python -m pytest tests/integration/*.py
+
 .PHONY: test
-test:
-	$(ENV_NAME)/bin/python -m doctest tests/*.py
-	$(ENV_NAME)/bin/python -m pytest tests/*.py
+test: unittest integrationtest
 
 .PHONY: build
 build:
@@ -29,15 +38,15 @@ build:
 
 .PHONY: typehint
 typehint:
-	$(ENV_NAME)/bin/python -m mypy tagesschauscraper tests examples
+	$(ENV_NAME)/bin/python -m mypy $(DIRS)
 
 .PHONY: format 
 format:
-	$(ENV_NAME)/bin/python -m black --line-length=79 --preview tagesschauscraper tests examples
+	$(ENV_NAME)/bin/python -m black --line-length=79 --preview $(DIRS)
 
 .PHONY: lint
 lint:
-	$(ENV_NAME)/bin/python -m flake8 tagesschauscraper tests examples --ignore=E501 --max-line-length=79
+	$(ENV_NAME)/bin/python -m flake8 $(DIRS) --ignore=E501 --max-line-length=79
 
 .PHONY: checklist
 checklist: typehint format lint test

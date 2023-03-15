@@ -4,7 +4,7 @@ A library for scraping the German news archive of Tagesschau.de
 
 ## Install
 Tagesschauscraper is available on PyPI:
-```
+```sh
 $ pip install tagesschauscraper
 ```
 

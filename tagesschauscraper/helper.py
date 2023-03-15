@@ -1,7 +1,7 @@
 import hashlib
 import json
 import os
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Union
 
 
@@ -159,3 +159,34 @@ def save_to_json(obj_: dict, file_path):
     with open(file_path, "w") as fp:
         json.dump(obj_, fp, indent=4)
     print(f"Saved to: {file_path}")
+
+
+def get_date_range(start_date: date, end_date: date) -> list[date]:
+    """
+    Return a date range from start date (inclusive) to end date (exclusive)
+    with an interval of 1 day.
+
+    Parameters
+    ----------
+    start_date : date
+        Start date (inclusive)
+    end_date : date
+        End date (exclusive)
+
+    Returns
+    -------
+    list[date]
+        List of dates
+
+    Raises
+    ------
+    ValueError
+        When end_date is before start_date
+    """
+    if end_date > start_date:
+        days_between = (end_date - start_date).days
+        return [
+            start_date + timedelta(days=days) for days in range(days_between)
+        ]
+    else:
+        raise ValueError("end_date must be after start_date.")
