@@ -2,13 +2,17 @@ import sqlite3
 from datetime import date
 from typing import Dict, Union
 import requests
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup
+from bs4.element import Tag
 from tagesschauscraper import constants, helper, retrieve
 
 ARCHIVE_URL = "https://www.tagesschau.de/archiv/"
 NEWS_CATEGORIES = ["wirtschaft", "inland", "ausland"]
 RequestParams = Dict[str, str]
-NewsRecord = Dict[str, str]
+TeaserRecord = Dict[str, str]
+ArticleRecord = Dict[str, str]
+NewsId = str
+NewsRecord = Dict[str, Union[NewsId, TeaserRecord, ArticleRecord]]
 
 
 class ArchiveFilter:
@@ -43,11 +47,11 @@ class ArchiveFilter:
         "page": "pageIndex",
     }
 
-    def __init__(self, raw_params: dict):
+    def __init__(self, raw_params: Dict[str, Union[str, date]]) -> None:
         self.raw_params = raw_params
         self.processed_params = self.process_params(raw_params)
 
-    def process_date(self, date_: date):
+    def process_date(self, date_: date) -> str:
         self.DATE_PATTERN = "%Y-%m-%d"
         date_str = date_.strftime(self.DATE_PATTERN)
         return date_str
@@ -55,13 +59,13 @@ class ArchiveFilter:
     def process_category(
         self,
         category: str,
-    ):
+    ) -> str:
         if category in NEWS_CATEGORIES:
             return category
         else:
             return ""
 
-    def process_page(self, page: str = "1"):
+    def process_page(self, page: str = "1") -> str:
         if page.isdigit():
             return page
         else:
@@ -79,7 +83,9 @@ class ArchiveFilter:
         else:
             raise ValueError
 
-    def process_params(self, raw_params: dict) -> RequestParams:
+    def process_params(
+        self, raw_params: Dict[str, Union[str, date]]
+    ) -> RequestParams:
         """
         Process the filter parameters to strings.
 
@@ -120,7 +126,9 @@ class ScraperConfig:
                 self.extend_request_params_with_pagination(f.processed_params)
             )
 
-    def get_archive_soup_from_params(self, params):
+    def get_archive_soup_from_params(
+        self, params: RequestParams
+    ) -> BeautifulSoup:
         response = requests.get(ARCHIVE_URL, params=params)
         return retrieve.get_soup(response)
 
@@ -141,7 +149,9 @@ class TagesschauScraper:
     def __init__(self) -> None:
         self.validation_element = {"class": "archive__headline"}
 
-    def get_news_from_archive(self, config: ScraperConfig) -> dict:
+    def get_news_from_archive(
+        self, config: ScraperConfig
+    ) -> Dict[str, list[NewsRecord]]:
         records = []
         for params in config.request_params:
             response = requests.get(ARCHIVE_URL, params=params)
@@ -150,7 +160,9 @@ class TagesschauScraper:
             )
         return {"records": records}
 
-    def scrape_teaser(self, response: requests.Response) -> dict:
+    def scrape_teaser(
+        self, response: requests.Response
+    ) -> Dict[str, list[TeaserRecord]]:
         """
         Scrape all teaser on the archive <url>.
 
@@ -166,7 +178,7 @@ class TagesschauScraper:
             Scraped teaser.
         """
         websiteTest = retrieve.WebsiteTest(response)
-        if websiteTest.is_element(self.validation_element):
+        if websiteTest.is_element(attrs=self.validation_element):
             return self._extract_all_teaser(websiteTest.soup)
         else:
             raise ValueError(
@@ -174,7 +186,9 @@ class TagesschauScraper:
                 "cannot be found."
             )
 
-    def scrape_teaser_and_articles(self, response: requests.Response) -> dict:
+    def scrape_teaser_and_articles(
+        self, response: requests.Response
+    ) -> Dict[str, list[NewsRecord]]:
         """
         Scrape all teaser on the archive <url>.
 
@@ -197,19 +211,21 @@ class TagesschauScraper:
 
     def _extract_all_teaser(
         self, soup: BeautifulSoup
-    ) -> Dict[str, list[NewsRecord]]:
+    ) -> Dict[str, list[TeaserRecord]]:
         self.teaser_element = {
             "class": "columns teaser-xs twelve teaser-xs__wide"
         }
-        extracted_teaser_list: list[NewsRecord] = []
-        for teaser in soup.find_all(**self.teaser_element):
+        extracted_teaser_list: list[TeaserRecord] = []
+        for teaser in soup.find_all(attrs=self.teaser_element):
             teaserObj = Teaser(soup=teaser)
             teaser_data = teaserObj.get_data()
             if teaserObj.is_teaser_data_valid(teaser_data):
                 extracted_teaser_list.append(teaser_data)
         return {"records": extracted_teaser_list}
 
-    def _merge_teaser_and_article_tags(self, teaser_data: dict) -> dict:
+    def _merge_teaser_and_article_tags(
+        self, teaser_data: TeaserRecord
+    ) -> NewsRecord:
         """
         Enrich the teaser information with the article tags.
 
@@ -225,20 +241,23 @@ class TagesschauScraper:
             tags.
         """
         article_link = teaser_data.get("link")
-        id_ = helper.get_hash_from_string(article_link)
-        article_tags = {}
         if article_link:
-            try:
-                article_soup = retrieve.get_soup_from_url(article_link)
+            id_ = helper.get_hash_from_string(article_link)
+            article_tags = {}
+            if article_link:
+                try:
+                    article_soup = retrieve.get_soup_from_url(article_link)
 
-            except requests.exceptions.TooManyRedirects:
-                print(f"Article not found for link: {article_link}.")
+                except requests.exceptions.TooManyRedirects:
+                    print(f"Article not found for link: {article_link}.")
 
-            else:
-                articleObj = Article(article_soup)
-                article_tags = articleObj.extract_article_tags()
-        article_data = article_tags
-        return {"id": id_, "teaser": teaser_data, "article": article_data}
+                else:
+                    articleObj = Article(article_soup)
+                    article_tags = articleObj.extract_article_tags()
+            article_data = article_tags
+            return {"id": id_, "teaser": teaser_data, "article": article_data}
+        else:
+            raise ValueError("No article link found in provided teaser data.")
 
 
 class Archive:
@@ -258,9 +277,6 @@ class Archive:
         self.archive_soup = soup
         self.archive_info: Dict[str, str] = dict()
 
-    def get_all_teaser(self):
-        ...
-
     def extract_pagination(self) -> list[Dict[str, str]]:
         page_keyword = "pageIndex"
         pagination_html = self.archive_soup.find(
@@ -271,16 +287,10 @@ class Archive:
             pagination_elements = pagination_html.find_all("li")
             if pagination_elements:
                 for element in pagination_elements:
-                    if hasattr(element, "get_text"):
-                        try:
-                            page = int(element.get_text(strip=True))
-                        except ValueError:
-                            print(
-                                "Cannot cast str to int for"
-                                f" '{element.get_text(strip=True)}'. Continue"
-                                " execution."
-                            )
-                        else:
+                    if isinstance(element, Tag):
+                        page_str = element.get_text(strip=True)
+                        if page_str.isdigit():
+                            page = int(page_str)
                             if page > max_page:
                                 max_page = page
         return [{page_keyword: str(p)} for p in range(1, max_page + 1)]
@@ -300,17 +310,18 @@ class Archive:
         year = int(year_raw)
         return date(year, month, day)
 
-    def extract_info_from_archive(self) -> dict:
+    def extract_info_from_archive(self) -> Dict[str, str]:
         name_html_mapping_text = {
             "headline": "archive__headline",
             "num_teaser": "ergebnisse__anzahl",
         }
-        self.archive_info = {
-            name: retrieve.get_text_from_html(
-                self.archive_soup, {"class_": html_tag}
+        for name, html_tag in name_html_mapping_text.items():
+            text = retrieve.get_text_from_html(
+                self.archive_soup, element={"class": html_tag}
             )
-            for name, html_tag in name_html_mapping_text.items()
-        }
+            if text:
+                self.archive_info[name] = text
+
         return self.archive_info
 
 
@@ -329,7 +340,7 @@ class Teaser:
             BeautifulSoup object representing an element for a news teaser.
         """
         self.teaser_soup = soup
-        self.teaser_info: Dict[str, str] = dict()
+        self.teaser_info: TeaserRecord = dict()
         self.required_attributes = {
             "date",
             "topline",
@@ -338,11 +349,11 @@ class Teaser:
             "link",
         }
 
-    def get_data(self) -> NewsRecord:
+    def get_data(self) -> TeaserRecord:
         extracted_data = self.extract_data_from_teaser()
         return self.process_extracted_data(extracted_data)
 
-    def extract_data_from_teaser(self) -> dict:
+    def extract_data_from_teaser(self) -> TeaserRecord:
         """
         Extracts structured information from a teaser element.
         The extracted elements are:
@@ -379,7 +390,9 @@ class Teaser:
 
         return self.teaser_info
 
-    def process_extracted_data(self, teaser_info: dict) -> dict:
+    def process_extracted_data(
+        self, teaser_data: TeaserRecord
+    ) -> TeaserRecord:
         """
         Process the extracted teaser information.
 
@@ -393,13 +406,13 @@ class Teaser:
         dict
             Dictionary containing processed teaser information.
         """
-        teaser_info["date"] = helper.transform_datetime_str(
-            teaser_info["date"]
+        teaser_data["date"] = helper.transform_datetime_str(
+            teaser_data["date"]
         )
-        self.teaser_info.update(teaser_info)
-        return teaser_info
+        self.teaser_info.update(teaser_data)
+        return teaser_data
 
-    def is_teaser_data_valid(self, teaser_info: Dict[str, str]) -> bool:
+    def is_teaser_data_valid(self, teaser_info: TeaserRecord) -> bool:
         """
         Check if scraped information exists for all required attributes.
 
@@ -428,12 +441,12 @@ class Article:
         self.article_soup = soup
         self.tags_element = {"class": "taglist"}
 
-    def get_data(self) -> Dict[str, str]:
+    def get_data(self) -> ArticleRecord:
         article_tags = self.extract_article_tags()
         article_data = article_tags
         return article_data
 
-    def extract_article_tags(self) -> Dict[str, str]:
+    def extract_article_tags(self) -> ArticleRecord:
         tags_group = self.article_soup.find(class_="taglist")
         if isinstance(tags_group, Tag):
             tags = [
@@ -479,7 +492,7 @@ class TagesschauDB:
             """
         self.c.execute(query)
 
-    def insert(self, content: dict) -> None:
+    def insert(self, content: Dict[str, str]) -> None:
         query = f"""
             INSERT OR IGNORE INTO {TagesschauDB._TABLE_NAME}
             VALUES (:id, :date, :topline, :headline, :shorttext, :link, :tags)

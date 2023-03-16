@@ -22,17 +22,17 @@ class TestDateDirectoryTreeCreator(unittest.TestCase):
     def tearDown(self) -> None:
         shutil.rmtree(self.root_dir)
 
-    def test_create_file_path_from_date(self):
+    def test_create_file_path_from_date(self) -> None:
         self.assertEqual(
             self.true_file_path,
             self.dateDirectoryTreeCreator.create_file_path_from_date(),
         )
 
-    def test_make_dir_tree_from_date(self):
+    def test_make_dir_tree_from_date(self) -> None:
         self.dateDirectoryTreeCreator.make_dir_tree_from_date()
         self.assertTrue(self.true_file_path)
 
-    def test_make_dir_tree_from_file_path(self):
+    def test_make_dir_tree_from_file_path(self) -> None:
         self.dateDirectoryTreeCreator.make_dir_tree_from_file_path(
             self.true_file_path
         )
@@ -40,7 +40,7 @@ class TestDateDirectoryTreeCreator(unittest.TestCase):
 
 
 class TestCreateFileNameFromDate(unittest.TestCase):
-    def test_create_file_name_from_date(self):
+    def test_create_file_name_from_date(self) -> None:
         date_ = date(2022, 1, 12)
         true_file_name = "prefix_2022-01-12_suffix.json"
         self.assertEqual(
@@ -50,7 +50,7 @@ class TestCreateFileNameFromDate(unittest.TestCase):
             ),
         )
 
-    def test_create_file_name_from_datetime(self):
+    def test_create_file_name_from_datetime(self) -> None:
         datetime_ = datetime(2022, 1, 12, 11, 12, 30)
         true_file_name = "prefix_2022-01-12T11:12:30_suffix.json"
         self.assertEqual(
@@ -65,7 +65,7 @@ class TestCreateFileNameFromDate(unittest.TestCase):
 
 
 class TestNormalizeDatetime(unittest.TestCase):
-    def test_normalize_datetime(self):
+    def test_normalize_datetime(self) -> None:
         self.assertEqual(
             helper.transform_datetime_str("30.01.2021 - 18:04 Uhr"),
             "2021-01-30 18:04:00",
@@ -73,7 +73,7 @@ class TestNormalizeDatetime(unittest.TestCase):
 
 
 class TestDateRange(unittest.TestCase):
-    def test_get_date_range(self):
+    def test_get_date_range(self) -> None:
         expected_result = [
             date(2022, 1, 1),
             date(2022, 1, 2),

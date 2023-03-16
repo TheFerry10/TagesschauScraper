@@ -6,7 +6,7 @@ from tagesschauscraper import tagesschau
 
 
 class TestTagesschauScraper(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         dates = [date(2023, 3, 1), date(2023, 3, 2)]
         category = "wirtschaft"
         self.archiveFilters = [
@@ -16,7 +16,7 @@ class TestTagesschauScraper(unittest.TestCase):
         self.config = tagesschau.ScraperConfig(self.archiveFilters)
         self.tageschauScraper = tagesschau.TagesschauScraper()
 
-    def test_scraper_config(self):
+    def test_scraper_config(self) -> None:
         expected_request_parameter_list = [
             {"datum": "2023-03-01", "ressort": "wirtschaft", "pageIndex": "1"},
             {"datum": "2023-03-02", "ressort": "wirtschaft", "pageIndex": "1"},
@@ -25,7 +25,7 @@ class TestTagesschauScraper(unittest.TestCase):
             self.config.request_params, expected_request_parameter_list
         )
 
-    def test_get_news_from_archive(self):
+    def test_get_news_from_archive(self) -> None:
         with open(
             "tests/data/teaser-article-2023-03-01-2023-03-02.json", "r"
         ) as f:
@@ -35,7 +35,7 @@ class TestTagesschauScraper(unittest.TestCase):
             expected_records,
         )
 
-    def test_scrape_teaser_and_articles(self):
+    def test_scrape_teaser_and_articles(self) -> None:
         with open("tests/data/teaser-article-2023-01-01.json", "r") as f:
             expected_records = json.load(f)
         response = requests.get(
@@ -46,7 +46,7 @@ class TestTagesschauScraper(unittest.TestCase):
             expected_records,
         )
 
-    def test_scrape_teaser(self):
+    def test_scrape_teaser(self) -> None:
         with open("tests/data/teaser-2023-01-01.json", "r") as f:
             expected_records = json.load(f)
         response = requests.get(

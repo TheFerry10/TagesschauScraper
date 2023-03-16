@@ -1,5 +1,4 @@
 import hashlib
-import json
 import os
 from datetime import date, datetime, timedelta
 from typing import Union
@@ -33,7 +32,7 @@ def transform_datetime_str(datetime_string: str) -> str:
     return f"{year}-{month}-{day} {hour}:{minute}:{second}"
 
 
-def get_hash_from_string(string):
+def get_hash_from_string(string: str) -> str:
     result = hashlib.sha1(string.encode())
     return result.hexdigest()
 
@@ -126,7 +125,7 @@ def create_file_name_from_date(
     date_pattern: Union[str, None] = None,
     prefix: str = "",
     suffix: str = "",
-    extension="",
+    extension: str = "",
 ) -> str:
     """
     Create a file name from a date object.
@@ -158,12 +157,6 @@ def create_file_name_from_date(
         formatted_date = date_or_datetime.strftime(date_pattern)
     file_name = prefix + formatted_date + suffix + extension
     return file_name
-
-
-def save_to_json(obj_: dict, file_path):
-    with open(file_path, "w") as fp:
-        json.dump(obj_, fp, indent=4)
-    print(f"Saved to: {file_path}")
 
 
 def get_date_range(start_date: date, end_date: date) -> list[date]:

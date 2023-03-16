@@ -10,6 +10,7 @@ import argparse
 import logging
 import time
 import os
+import json
 from datetime import datetime
 from tagesschauscraper import helper, tagesschau
 from tagesschauscraper.tagesschau import ARCHIVE_URL
@@ -93,8 +94,7 @@ archiveFilters = [
 config = tagesschau.ScraperConfig(archiveFilters)
 tagesschauScraper = tagesschau.TagesschauScraper()
 logging.info(
-    f"Scraping news from URL {ARCHIVE_URL} with params"
-    f" {config.request_params}"
+    f"Scraping news from URL {ARCHIVE_URL} with params {config.request_params}"
 )
 records = tagesschauScraper.get_news_from_archive(config)
 logging.info("Scraping terminated.")
@@ -105,7 +105,8 @@ if not os.path.isdir(args.datadir):
 file_name = "_".join([args.start_date, args.end_date, args.category]) + ".json"
 file_name_and_path = os.path.join(args.datadir, file_name)
 logging.info(f"Save scraped news to file {file_name_and_path}")
-helper.save_to_json(records, file_name_and_path)
+with open(file_name_and_path, "w") as fp:
+    json.dump(records, fp, indent=4)
 logging.info("Done.")
 end_time = time.time()
 logging.info(f"Execution time: {end_time - start_time:.2f} seconds")

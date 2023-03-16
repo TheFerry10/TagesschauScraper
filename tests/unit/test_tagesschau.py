@@ -2,16 +2,17 @@ import unittest
 from datetime import date
 from bs4 import BeautifulSoup
 from tagesschauscraper import tagesschau
+from typing import Union, Dict
 
 
 class TestTagesschauScraper(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         with open("tests/data/teaser-list.html", "r") as f:
             html = f.read()
         self.soup = BeautifulSoup(html, "html.parser")
         self.tageschauScraper = tagesschau.TagesschauScraper()
 
-    def test_extract_all_teaser(self):
+    def test_extract_all_teaser(self) -> None:
         expected_teaser_list = {
             "records": [
                 {
@@ -43,7 +44,7 @@ class TestTagesschauScraper(unittest.TestCase):
             expected_teaser_list,
         )
 
-    def test_enrich_teaser_info_with_article_tags(self):
+    def test_enrich_teaser_info_with_article_tags(self) -> None:
         teaser_data = {
             "date": "01.03.2022 - 18:54 Uhr",
             "topline": "Pipeline-Projekt",
@@ -91,13 +92,13 @@ class TestTagesschauScraper(unittest.TestCase):
 
 
 class TestTeaser(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         with open("tests/data/teaser.html", "r") as f:
             html = f.read()
         self.soup = BeautifulSoup(html, "html.parser")
         self.teaser = tagesschau.Teaser(self.soup)
 
-    def test_extract_info_from_teaser(self):
+    def test_extract_info_from_teaser(self) -> None:
         teaser_info = self.teaser.extract_data_from_teaser()
         true_teaser_info = {
             "date": "01.03.2022 - 18:54 Uhr",
@@ -112,7 +113,7 @@ class TestTeaser(unittest.TestCase):
         }
         self.assertDictEqual(teaser_info, true_teaser_info)
 
-    def test_process_info(self):
+    def test_process_info(self) -> None:
         teaser_info = {
             "date": "01.03.2022 - 18:54 Uhr",
             "topline": "Pipeline-Projekt",
@@ -140,7 +141,7 @@ class TestTeaser(unittest.TestCase):
         processed_teaser_info = self.teaser.process_extracted_data(teaser_info)
         self.assertDictEqual(processed_teaser_info, true_processed_teaser_info)
 
-    def test_is_teaser_info_valid_complete(self):
+    def test_is_teaser_info_valid_complete(self) -> None:
         teaser_info = {
             "date": "2022-03-01 18:54:00",
             "topline": "Pipeline-Projekt",
@@ -154,7 +155,7 @@ class TestTeaser(unittest.TestCase):
         }
         self.assertEqual(self.teaser.is_teaser_data_valid(teaser_info), True)
 
-    def test_is_teaser_info_valid_no_link(self):
+    def test_is_teaser_info_valid_no_link(self) -> None:
         teaser_info = {
             "date": "2022-03-01 18:54:00",
             "topline": "Pipeline-Projekt",
@@ -169,13 +170,13 @@ class TestTeaser(unittest.TestCase):
 
 
 class TestArticle(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         with open("tests/data/article.html", "r") as f:
             html = f.read()
         self.soup = BeautifulSoup(html, "html.parser")
         self.article = tagesschau.Article(self.soup)
 
-    def test_extract_article_tags(self):
+    def test_extract_article_tags(self) -> None:
         article_tags = self.article.extract_article_tags()
         expected_article_tags = {
             "tags": ",".join(
@@ -186,13 +187,13 @@ class TestArticle(unittest.TestCase):
 
 
 class TestArchive(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         with open("tests/data/archive.html", "r") as f:
             html = f.read()
         self.soup = BeautifulSoup(html, "html.parser")
         self.archive = tagesschau.Archive(self.soup)
 
-    def test_extract_pagination(self):
+    def test_extract_pagination(self) -> None:
         with open("tests/data/archive-pagination.html", "r") as f:
             html = f.read()
         soup = BeautifulSoup(html, "html.parser")
@@ -202,7 +203,7 @@ class TestArchive(unittest.TestCase):
             self.archive.extract_pagination(), expected_pagination
         )
 
-    def test_transform_date_to_date_in_headline(self):
+    def test_transform_date_to_date_in_headline(self) -> None:
         date_ = date(2022, 3, 1)
         true_date_in_headline = "1. März 2022"
         date_in_headline = self.archive.transform_date_to_date_in_headline(
@@ -210,7 +211,7 @@ class TestArchive(unittest.TestCase):
         )
         self.assertEqual(date_in_headline, true_date_in_headline)
 
-    def test_transform_date_in_headline_to_date(self):
+    def test_transform_date_in_headline_to_date(self) -> None:
         date_in_headline = "1. März 2022"
         true_date = date(2022, 3, 1)
         date_ = self.archive.transform_date_in_headline_to_date(
@@ -218,18 +219,21 @@ class TestArchive(unittest.TestCase):
         )
         self.assertEqual(date_, true_date)
 
-    def test_extract_info_from_archive(self):
+    def test_extract_info_from_archive(self) -> None:
         archive_info = self.archive.extract_info_from_archive()
         true_archive_info = {"headline": "1. März 2022", "num_teaser": "20"}
         self.assertEqual(archive_info, true_archive_info)
 
 
 class TestArchiveFilter(unittest.TestCase):
-    def test_input_processing(self):
+    def test_input_processing(self) -> None:
         expected_parameter = {"datum": "2023-03-01", "ressort": "wirtschaft"}
         date_ = date(2023, 3, 1)
         category = "wirtschaft"
-        raw_params = {"date": date_, "category": category}
+        raw_params: Dict[str, Union[str, date]] = {
+            "date": date_,
+            "category": category,
+        }
         archiveFilter = tagesschau.ArchiveFilter(raw_params)
         self.assertDictEqual(
             archiveFilter.processed_params, expected_parameter
