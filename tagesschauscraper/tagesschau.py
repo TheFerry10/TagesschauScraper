@@ -17,28 +17,11 @@ NewsRecord = Dict[str, Union[NewsId, TeaserRecord, ArticleRecord]]
 
 class ArchiveFilter:
     """
-    Class for encapsulating the filter options for the news archive
-
-    Parameters
-    ----------
-    date_ : date
-        Filter articles on date.
-    category : str, optional
-        Filter articles on category. Could be "wirtschaft", "inland",
-        "ausland" or "all".
-        By default, "all" is selected.
-    page: int
-        Page number. Default is 1.
-
-    Returns
-    -------
-    dict
-        Request parameters
-
-    Raises
-    ------
-    ValueError
-        When category is not defined.
+    Class for encapsulating the filter options for the news archive.
+    
+    Filtering the archive on <date_>, <category> and <page> are implemented.
+    The main purpose of the ArchiveFilter is to abstract implementation details 
+    regarding filtering news.
     """
 
     PARAMS_KEY_MAPPING = {
@@ -48,6 +31,15 @@ class ArchiveFilter:
     }
 
     def __init__(self, raw_params: Dict[str, Union[str, date]]) -> None:
+        """
+        Processing the parameters internally after providing the unprocessed
+        parameters as input.
+        
+        Parameters
+        ----------
+        raw_params : Dict[str, Union[str, date]]
+            Unprocessed parameters
+        """
         self.raw_params = raw_params
         self.processed_params = self.process_params(raw_params)
 
@@ -74,6 +66,28 @@ class ArchiveFilter:
     def choose_process_logic(
         self, param_name: str, param_value: Union[date, str]
     ) -> str:
+        """
+        Return the processed parameter value based on the parameter name. This
+        function is a wrapper for the implemented processing functions. 
+
+        Parameters
+        ----------
+        param_name : str
+            Parameter name
+        param_value : Union[date, str]
+            Parameter value
+
+        Returns
+        -------
+        str
+            Processed parameter value according to processing function.
+
+        Raises
+        ------
+        ValueError
+            Raise error when processing function not implemented for parameter
+            value.
+        """
         if (param_name == "date") and isinstance(param_value, date):
             return self.process_date(param_value)
         elif (param_name == "category") and isinstance(param_value, str):
@@ -115,6 +129,16 @@ class ScraperConfig:
     def __init__(
         self, archive_filter: Union[ArchiveFilter, list[ArchiveFilter]]
     ) -> None:
+        """
+        Generating the request parameters from the provided ArchiveFilter. It
+        takes also into account when results span multiple pages.
+
+        Parameters
+        ----------
+        archive_filter : Union[ArchiveFilter, list[ArchiveFilter]]
+            The ArchiveFilter object (or list of ArchiveFilters) abstracts the
+            search criteria for the scraping process.
+        """
         if not isinstance(archive_filter, list):
             self.archive_filters = [archive_filter]
         else:
@@ -135,6 +159,22 @@ class ScraperConfig:
     def extend_request_params_with_pagination(
         self, request_params: RequestParams
     ) -> list[RequestParams]:
+        """
+        Extend the request parameters with a pageIndex, if the results are
+        distributed over multiple pages.
+
+        Parameters
+        ----------
+        request_params : RequestParams
+            Initial request parameters
+
+        Returns
+        -------
+        list[RequestParams]
+            Expanding the request parameters to a list of request parameters.
+            The length of the list is equal to the number of pages that the
+            results are distributed over.
+        """
         soup = self.get_archive_soup_from_params(request_params)
         archive = Archive(soup)
         pagination = archive.extract_pagination()
