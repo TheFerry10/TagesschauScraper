@@ -13,7 +13,7 @@ class TestTagesschauScraper(unittest.TestCase):
             tagesschau.ArchiveFilter({"date": d, "category": category})
             for d in dates
         ]
-        self.config = tagesschau.ScraperConfig(self.archiveFilters)
+        self.config = tagesschau.TagesschauConfig(self.archiveFilters)
         self.tageschauScraper = tagesschau.TagesschauScraper()
 
     def test_scraper_config(self) -> None:

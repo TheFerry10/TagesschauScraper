@@ -99,7 +99,7 @@ class TestTeaser(unittest.TestCase):
         self.teaser = tagesschau.Teaser(self.soup)
 
     def test_extract_info_from_teaser(self) -> None:
-        teaser_info = self.teaser.extract_data_from_teaser()
+        teaser_info = self.teaser.extract_data()
         true_teaser_info = {
             "date": "01.03.2022 - 18:54 Uhr",
             "topline": "Pipeline-Projekt",
@@ -153,7 +153,9 @@ class TestTeaser(unittest.TestCase):
             ),
             "link": "https://www.tagesschau.de/wirtschaft/unternehmen/nord-stream-insolvenz-gazrom-gas-pipeline-russland-ukraine-103.html",
         }
-        self.assertEqual(self.teaser.is_teaser_data_valid(teaser_info), True)
+        self.assertEqual(
+            self.teaser.is_extracted_data_valid(teaser_info), True
+        )
 
     def test_is_teaser_info_valid_no_link(self) -> None:
         teaser_info = {
@@ -166,7 +168,9 @@ class TestTeaser(unittest.TestCase):
                 "  ist offenbar insolvent."
             ),
         }
-        self.assertEqual(self.teaser.is_teaser_data_valid(teaser_info), False)
+        self.assertEqual(
+            self.teaser.is_extracted_data_valid(teaser_info), False
+        )
 
 
 class TestArticle(unittest.TestCase):

@@ -18,9 +18,9 @@ NewsRecord = Dict[str, Union[NewsId, TeaserRecord, ArticleRecord]]
 class ArchiveFilter:
     """
     Class for encapsulating the filter options for the news archive.
-    
+
     Filtering the archive on <date_>, <category> and <page> are implemented.
-    The main purpose of the ArchiveFilter is to abstract implementation details 
+    The main purpose of the ArchiveFilter is to abstract implementation details
     regarding filtering news.
     """
 
@@ -34,7 +34,7 @@ class ArchiveFilter:
         """
         Processing the parameters internally after providing the unprocessed
         parameters as input.
-        
+
         Parameters
         ----------
         raw_params : Dict[str, Union[str, date]]
@@ -68,7 +68,7 @@ class ArchiveFilter:
     ) -> str:
         """
         Return the processed parameter value based on the parameter name. This
-        function is a wrapper for the implemented processing functions. 
+        function is a wrapper for the implemented processing functions.
 
         Parameters
         ----------
@@ -121,7 +121,7 @@ class ArchiveFilter:
         }
 
 
-class ScraperConfig:
+class TagesschauConfig:
     """
     A configuration class for the TagesschauScraper.
     """
@@ -190,7 +190,7 @@ class TagesschauScraper:
         self.validation_element = {"class": "archive__headline"}
 
     def get_news_from_archive(
-        self, config: ScraperConfig
+        self, config: TagesschauConfig
     ) -> Dict[str, list[NewsRecord]]:
         records = []
         for params in config.request_params:
@@ -259,7 +259,7 @@ class TagesschauScraper:
         for teaser in soup.find_all(attrs=self.teaser_element):
             teaserObj = Teaser(soup=teaser)
             teaser_data = teaserObj.get_data()
-            if teaserObj.is_teaser_data_valid(teaser_data):
+            if teaserObj.is_extracted_data_valid(teaser_data):
                 extracted_teaser_list.append(teaser_data)
         return {"records": extracted_teaser_list}
 
@@ -300,7 +300,68 @@ class TagesschauScraper:
             raise ValueError("No article link found in provided teaser data.")
 
 
-class Archive:
+class TagesschauContent:
+    """
+    Base class for dealing with different content on Tagesschau.de.
+    """
+
+    def __init__(self, soup: BeautifulSoup) -> None:
+        self.soup = soup
+        self.html_mapping: Dict[str, Dict[str, Union[Dict[str, str], str]]] = (
+            {}
+        )
+        self.extracted_data: Dict[str, Union[str, list[str]]] = {}
+
+    def get_data(self) -> Dict[str, Union[str, list[str]]]:
+        self.extract_data()
+        self.process_extracted_data()
+        self.check_extracted_data()
+        return self.extracted_data
+
+    def extract_data(self) -> None:
+        """
+        Extracts structured information from soup.
+
+        Returns
+        -------
+        dict
+            A dictionary containing all structured information.
+        """
+        for name, attrs_and_type in self.html_mapping.items():
+            results = self.soup.find_all(attrs=attrs_and_type["attrs"])
+            extracted_results: list[str] = []
+            for tag in results:
+                if isinstance(tag, Tag):
+                    if attrs_and_type["type"] == "text":
+                        r = tag.get_text(strip=True, separator=" ")
+                        extracted_results.append(r)
+
+                    elif attrs_and_type["type"] == "href":
+                        href = tag.get("href")
+                        if isinstance(href, str):
+                            r = href
+                            extracted_results.append(r)
+                        else:
+                            raise ValueError
+            if len(extracted_results) == 1:
+                self.extracted_data[name] = extracted_results[0]
+            else:
+                self.extracted_data[name] = extracted_results
+
+        return
+
+    def process_extracted_data(self) -> None:
+        pass
+
+    def check_extracted_data(self) -> None:
+        if not self.is_extracted_data_valid():
+            raise ValueError
+
+    def is_extracted_data_valid(self) -> bool:
+        return True
+
+
+class Archive(TagesschauContent):
     """
     A class for extracting information from news archive.
     """
@@ -314,26 +375,39 @@ class Archive:
         soup : BeautifulSoup
             BeautifulSoup object representing an element for a news teaser.
         """
-        self.archive_soup = soup
+        self.soup = soup
         self.archive_info: Dict[str, str] = dict()
+        self.html_mapping = {
+            "headline": {
+                "attrs": {"class": "archive__headline"},
+                "type": "text",
+            },
+            "num_teaser": {
+                "attrs": {"class": "ergebnisse__anzahl"},
+                "type": "text",
+            },
+            "current_page": {"attrs": {"class": "active"}, "type": "text"},
+            "available_pages": {
+                "attrs": {"class": "paginierung__liste--link"},
+                "type": "text",
+            },
+        }
+        self.extracted_data: Dict[str, Union[str, list[str]]] = {}
 
-    def extract_pagination(self) -> list[Dict[str, str]]:
-        page_keyword = "pageIndex"
-        pagination_html = self.archive_soup.find(
-            "ul", class_="paginierung__liste"
-        )
-        max_page = 1
-        if isinstance(pagination_html, Tag):
-            pagination_elements = pagination_html.find_all("li")
-            if pagination_elements:
-                for element in pagination_elements:
-                    if isinstance(element, Tag):
-                        page_str = element.get_text(strip=True)
-                        if page_str.isdigit():
-                            page = int(page_str)
-                            if page > max_page:
-                                max_page = page
-        return [{page_keyword: str(p)} for p in range(1, max_page + 1)]
+    def process_extracted_data(self) -> None:
+        if self.extracted_data.get("available_pages"):
+            r = self.extracted_data.get("available_pages")
+            if isinstance(r, list):
+                max_page_number = max([int(p) for p in r if p.isdigit()])
+                self.extracted_data["available_pages"] = [
+                    {"pageIndex": str(p)}
+                    for p in range(1, max_page_number + 1)
+                ]
+            elif isinstance(r, str) and r.isdigit():
+                self.extracted_data["available_pages"] = [{"pageIndex": r}]
+
+        else:
+            self.extracted_data["available_pages"] = [{"pageIndex": 1}]
 
     def transform_date_to_date_in_headline(self, date_: date) -> str:
         year = date_.year
@@ -350,22 +424,8 @@ class Archive:
         year = int(year_raw)
         return date(year, month, day)
 
-    def extract_info_from_archive(self) -> Dict[str, str]:
-        name_html_mapping_text = {
-            "headline": "archive__headline",
-            "num_teaser": "ergebnisse__anzahl",
-        }
-        for name, html_tag in name_html_mapping_text.items():
-            text = retrieve.get_text_from_html(
-                self.archive_soup, element={"class": html_tag}
-            )
-            if text:
-                self.archive_info[name] = text
 
-        return self.archive_info
-
-
-class Teaser:
+class Teaser(TagesschauContent):
     """
     A class for extracting information from news teaser elements.
     """
@@ -379,8 +439,8 @@ class Teaser:
         soup : BeautifulSoup
             BeautifulSoup object representing an element for a news teaser.
         """
-        self.teaser_soup = soup
-        self.teaser_info: TeaserRecord = dict()
+        self.soup = soup
+        self.extracted_data: Dict[str, Union[str, list[str]]] = {}
         self.required_attributes = {
             "date",
             "topline",
@@ -388,51 +448,24 @@ class Teaser:
             "shorttext",
             "link",
         }
-
-    def get_data(self) -> TeaserRecord:
-        extracted_data = self.extract_data_from_teaser()
-        return self.process_extracted_data(extracted_data)
-
-    def extract_data_from_teaser(self) -> TeaserRecord:
-        """
-        Extracts structured information from a teaser element.
-        The extracted elements are:
-        * date
-        * topline
-        * headline
-        * shorttext
-        * article link
-
-        Returns
-        -------
-        dict
-            A dictionary containing all the information of the news teaser
-        """
-        field_names_text = ["date", "topline", "headline", "shorttext"]
-        field_names_link = ["link"]
-        name_html_mapping = {
-            key: f"teaser-xs__{key}"
-            for key in field_names_text + field_names_link
+        self.html_mapping = {
+            "date": {"attrs": {"class": "teaser-xs__date"}, "type": "text"},
+            "topline": {
+                "attrs": {"class": "teaser-xs__topline"},
+                "type": "text",
+            },
+            "headline": {
+                "attrs": {"class": "teaser-xs__headline"},
+                "type": "text",
+            },
+            "shorttext": {
+                "attrs": {"class": "teaser-xs__shorttext"},
+                "type": "text",
+            },
+            "link": {"attrs": {"class": "teaser-xs__link"}, "type": "href"},
         }
 
-        for field_name, html_class_name in name_html_mapping.items():
-            tag = self.teaser_soup.find(class_=html_class_name)
-            if isinstance(tag, Tag):
-                if field_name in field_names_text:
-                    self.teaser_info[field_name] = tag.get_text(
-                        strip=True, separator=" "
-                    )
-                elif field_name in field_names_link:
-                    if isinstance(tag.get("href"), str):
-                        self.teaser_info[field_name] = tag.get("href")  # type: ignore
-                    else:
-                        raise ValueError
-
-        return self.teaser_info
-
-    def process_extracted_data(
-        self, teaser_data: TeaserRecord
-    ) -> TeaserRecord:
+    def process_extracted_data(self) -> None:
         """
         Process the extracted teaser information.
 
@@ -446,13 +479,15 @@ class Teaser:
         dict
             Dictionary containing processed teaser information.
         """
-        teaser_data["date"] = helper.transform_datetime_str(
-            teaser_data["date"]
-        )
-        self.teaser_info.update(teaser_data)
-        return teaser_data
+        if self.extracted_data.get("date"):
+            if isinstance(self.extracted_data["date"], str):
+                self.extracted_data["date"] = helper.transform_datetime_str(
+                    self.extracted_data["date"]
+                )
+        else:
+            pass
 
-    def is_teaser_data_valid(self, teaser_info: TeaserRecord) -> bool:
+    def is_extracted_data_valid(self) -> bool:
         """
         Check if scraped information exists for all required attributes.
 
@@ -466,39 +501,37 @@ class Teaser:
         bool
             News teaser information is valid, when the function returns True.
         """
-        if not self.required_attributes.difference(teaser_info.keys()):
+        if not self.required_attributes.difference(self.extracted_data.keys()):
             return True
         else:
             return False
 
 
-class Article:
+class Article(TagesschauContent):
     """
     A class for extracting information from news article HTML elements.
     """
 
     def __init__(self, soup: BeautifulSoup) -> None:
         self.article_soup = soup
-        self.tags_element = {"class": "taglist"}
+        self.html_mapping = {
+            "tags": {
+                "attrs": {"class": "tag-btn tag-btn--light-grey"},
+                "type": "text",
+            }
+        }
+        self.extracted_data: Dict[str, Union[str, list[str]]] = {}
 
-    def get_data(self) -> ArticleRecord:
-        article_tags = self.extract_article_tags()
-        article_data = article_tags
-        return article_data
-
-    def extract_article_tags(self) -> ArticleRecord:
-        tags_group = self.article_soup.find(class_="taglist")
-        if isinstance(tags_group, Tag):
-            tags = [
-                tag.get_text(strip=True)
-                for tag in tags_group.find_all(
-                    class_="tag-btn tag-btn--light-grey"
+    def process_extracted_data(self):
+        if self.extracted_data.get("tags"):
+            if isinstance(self.extracted_data["tags"], list):
+                self.extracted_data["tags"] = ",".join(
+                    sorted(self.extracted_data["tags"])
                 )
-                if hasattr(tag, "get_text")
-            ]
+            else:
+                self.extracted_data["tags"] = [self.extracted_data["tags"]]
         else:
-            tags = []
-        return {"tags": ",".join(sorted(tags))}
+            pass
 
 
 class TagesschauDB:

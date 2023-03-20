@@ -80,7 +80,7 @@ logging.info(
 archiveFilter = tagesschau.ArchiveFilter(
     {"date": date_, "category": args.category}
 )
-config = tagesschau.ScraperConfig(archiveFilter)
+config = tagesschau.TagesschauConfig(archiveFilter)
 tagesschauScraper = tagesschau.TagesschauScraper()
 logging.info(
     f"Scraping news from URL {ARCHIVE_URL} with params {config.request_params}"

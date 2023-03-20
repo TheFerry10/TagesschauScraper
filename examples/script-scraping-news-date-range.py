@@ -91,7 +91,7 @@ archiveFilters = [
     tagesschau.ArchiveFilter({"date": date_, "category": args.category})
     for date_ in dates
 ]
-config = tagesschau.ScraperConfig(archiveFilters)
+config = tagesschau.TagesschauConfig(archiveFilters)
 tagesschauScraper = tagesschau.TagesschauScraper()
 logging.info(
     f"Scraping news from URL {ARCHIVE_URL} with params {config.request_params}"
