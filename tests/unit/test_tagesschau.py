@@ -5,6 +5,7 @@ from tagesschauscraper import tagesschau
 from typing import Union, Dict
 
 
+# TODO TestTagesschauScraper is an integration test
 class TestTagesschauScraper(unittest.TestCase):
     def setUp(self) -> None:
         with open("tests/data/teaser-list.html", "r") as f:
@@ -54,7 +55,7 @@ class TestTagesschauScraper(unittest.TestCase):
                 " der neuen Ostsee-Pipeline nach Russland,\n                  "
                 "  ist offenbar insolvent."
             ),
-            "link": "https://www.tagesschau.de/wirtschaft/unternehmen/nord-stream-insolvenz-gazrom-gas-pipeline-russland-ukraine-103.html",
+            "link": "https://www.tagesschau.de/inland/innenpolitik/afd-europawahl-104.html",
         }
 
         true_enriched_teaser_data = {

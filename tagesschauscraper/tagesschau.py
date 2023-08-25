@@ -5,6 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 from tagesschauscraper import constants, helper, retrieve
+from tagesschauscraper.retrieve import WebsiteTest
 
 ARCHIVE_URL = "https://www.tagesschau.de/archiv/"
 NEWS_CATEGORIES = ["wirtschaft", "inland", "ausland"]
@@ -15,9 +16,9 @@ NewsId = str
 NewsRecord = Dict[str, Union[NewsId, TeaserRecord, ArticleRecord]]
 
 
-class ArchiveFilter:
+class ArchiveFilterProcessor:
     """
-    Class for encapsulating the filter options for the news archive
+    Class for processing filter options for news archive.
 
     Parameters
     ----------
@@ -100,11 +101,18 @@ class ArchiveFilter:
             When category is not defined.
         """
         return {
-            ArchiveFilter.PARAMS_KEY_MAPPING[k]: self.choose_process_logic(
+            ArchiveFilterProcessor.PARAMS_KEY_MAPPING[k]: self.choose_process_logic(
                 k, v
             )
             for k, v in raw_params.items()
         }
+
+
+def cast_to_list(input: object) -> list[object]:
+    if not isinstance(input, list):
+        return [input]
+    else:
+        return input
 
 
 class ScraperConfig:
@@ -113,13 +121,9 @@ class ScraperConfig:
     """
 
     def __init__(
-        self, archive_filter: Union[ArchiveFilter, list[ArchiveFilter]]
+        self,ArchiveFilterUnion[ScrapingParameterProcessor, list[ScrapingParameterProcessor]]
     ) -> None:
-        if not isinstance(archive_filter, list):
-            self.archive_filters = [archive_filter]
-        else:
-            self.archive_filters = archive_filter
-
+        self.archive_filters = cast_to_list(archive_filter)
         self.request_params = []
         for f in self.archive_filters:
             self.request_params.extend(
@@ -242,18 +246,17 @@ class TagesschauScraper:
         """
         article_link = teaser_data.get("link")
         if article_link:
-            id_ = helper.get_hash_from_string(article_link)
-            article_tags = {}
-            if article_link:
-                try:
-                    article_soup = retrieve.get_soup_from_url(article_link)
+            # is this page what we are looking for?
+            html = retrieve.get_soup_from_url(article_link)
+            articleObj = Article(html)
+            article_tags = articleObj.extract_article_tags()
+            
 
-                except requests.exceptions.TooManyRedirects:
-                    print(f"Article not found for link: {article_link}.")
 
-                else:
-                    articleObj = Article(article_soup)
-                    article_tags = articleObj.extract_article_tags()
+
+
+
+
             article_data = article_tags
             return {"id": id_, "teaser": teaser_data, "article": article_data}
         else:
@@ -440,6 +443,18 @@ class Article:
     def __init__(self, soup: BeautifulSoup) -> None:
         self.article_soup = soup
         self.tags_element = {"class": "taglist"}
+        self.valid = self.is_valid()
+        if not self.valid:
+            raise ValueError("Article is not valid")
+
+    def is_valid(self) -> bool:
+        test = WebsiteTest(self.article_soup)
+        required_elements = [
+            {"class": "seitenkopf__title"},
+            {"class": "seitenkopf__headline"},
+            {"class": "taglist"},
+        ]
+        return any([test.is_element(attrs=r) for r in required_elements])
 
     def get_data(self) -> ArticleRecord:
         article_tags = self.extract_article_tags()

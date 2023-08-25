@@ -44,8 +44,8 @@ class WebsiteTest:
     Testing if a website works as expected.
     """
 
-    def __init__(self, response: requests.Response) -> None:
-        self.soup = get_soup(response)
+    def __init__(self, soup: BeautifulSoup) -> None:
+        self.soup = soup
 
     def is_element(
         self,
