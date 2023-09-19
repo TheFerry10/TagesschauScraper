@@ -89,9 +89,7 @@ class DateDirectoryTreeCreator:
             date_pattern = self.date_pattern
         if root_dir is None:
             root_dir = self.root_dir
-        self.file_path = os.path.join(
-            root_dir, self.date_.strftime(date_pattern)
-        )
+        self.file_path = os.path.join(root_dir, self.date_.strftime(date_pattern))
         return self.file_path
 
     def make_dir_tree_from_date(
@@ -183,8 +181,6 @@ def get_date_range(start_date: date, end_date: date) -> list[date]:
     """
     if end_date > start_date:
         days_between = (end_date - start_date).days
-        return [
-            start_date + timedelta(days=days) for days in range(days_between)
-        ]
+        return [start_date + timedelta(days=days) for days in range(days_between)]
     else:
         raise ValueError("end_date must be after start_date.")
