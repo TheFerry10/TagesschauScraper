@@ -14,12 +14,11 @@ NEWS_CATEGORIES = ["wirtschaft", "inland", "ausland"]
 DEFAULT_DATE_PATTERN = "%Y-%m-%d"
 
 
-#TODO move to utils
-def cast_to_list(input: object) -> list[object]:
-    if not isinstance(input, list):
-        return [input]
-    else:
-        return input
+def cast_to_list(input_: object) -> list[object]:
+    if not isinstance(input_, list):
+        return [input_]
+    return input_
+
 
 def transform_date(date_: date, date_pattern: str = DEFAULT_DATE_PATTERN) -> str:
     return date_.strftime(date_pattern)
@@ -39,6 +38,7 @@ def transform_date_in_headline_to_date(date_in_headline: str) -> date:
     year = int(year_raw)
     return date(year, month, day)
 
+
 @dataclass(frozen=True)
 class ArchiveFilter:
     date: date
@@ -51,13 +51,11 @@ def is_selected_in_categories(
     return category in NEWS_CATEGORIES
 
 
-def create_request_params(archiveFilter: ArchiveFilter) -> dict:
+def create_request_params(archive_filter: ArchiveFilter) -> dict:
     return {
-        "datum": transform_date(archiveFilter.date),
-        "filter": archiveFilter.news_category,
+        "datum": transform_date(archive_filter.date),
+        "filter": archive_filter.news_category,
     }
-
-
 
 
 def extract_pagination(soup: BeautifulSoup) -> list[Dict[str, str]]:
@@ -77,25 +75,57 @@ def extract_pagination(soup: BeautifulSoup) -> list[Dict[str, str]]:
     return [{page_keyword: str(p)} for p in range(1, max_page + 1)]
 
 
+@dataclass
+class TagDefinition:
+    name: str
+    attrs: Dict[str, str]
+
+
+def is_tag_in_soup(soup: BeautifulSoup, tag_definition: TagDefinition) -> bool:
+    if soup.find(name=tag_definition.name, attrs=tag_definition.attrs):
+        return True
+    return False
+
+
+def is_text_in_tag(
+    soup: BeautifulSoup,
+    tag_definition: TagDefinition,
+    text: str,
+) -> bool:
+    tag = soup.find(tag_definition.name, tag_definition.attrs)
+    if tag:
+        return text in tag.get_text(strip=True)
+    return False
+
+
+class NotValidHTML(Exception):
+    pass
+
+
 class AbstractContent(abc.ABC):
-    
     @abc.abstractmethod
     def validate(self):
         raise NotImplementedError
-    
+
     @abc.abstractmethod
     def extract(self):
-        raise NotImplementedError    
-        
+        raise NotImplementedError
+
 
 class Archive(AbstractContent):
     """
     A class for extracting information from news archive.
     """
 
+    # TODO: Better define this in a separate config file
+    RequiredHTMLContent = {
+        "tagDefinition": TagDefinition("div", {"class": "trenner__text__topline"}),
+        "text": "Archiv",
+    }
+
     def __init__(self, soup: BeautifulSoup) -> None:
         """
-        Initializes the Teaser with the provided BeautifulSoup element.
+        Initializes the Archive with the provided BeautifulSoup element.
 
         Parameters
         ----------
@@ -103,63 +133,49 @@ class Archive(AbstractContent):
             BeautifulSoup object representing an element for a news teaser.
         """
         self.soup = soup
+        self.valid = False
+        self.validate()
 
     def validate(self) -> None:
-        pass
+        self.valid = is_tag_in_soup(
+            self.soup, Archive.RequiredHTMLContent["tagDefinition"]
+        ) & is_text_in_tag(
+            self.soup,
+            Archive.RequiredHTMLContent["tagDefinition"],
+            Archive.RequiredHTMLContent["text"],
+        )
 
     def extract(self) -> None:
         pass
 
+    def extract_teaser_list(self) -> None:
+        pass
 
-def required_attributes_exist(soup):
-    return is_text_in_element(soup, "Archiv", "div", {"class": "trenner__text__topline"})
-    
+    def extract_news_categories(self) -> set:
+        # TODO Check existence of category container
+        category_container = self.soup.find("ul", {"class": "tabnav__list swipe"})
+        categories: set[str] = set()
+        if isinstance(category_container, Tag):
+            categories = {
+                category_element.get_text(strip=True)
+                for category_element in category_container.find_all(
+                    "li", {"class": "tabnav__item"}
+                )
+            }
+        return categories
 
+    def extract_date(self) -> str:
+        date_tag = self.soup.find(attrs={"class": "archive__headline"})
+        if date_tag:
+            return date_tag.get_text(strip=True)
 
-
-def is_element(
-    soup: BeautifulSoup,
-    name: Union[str, None] = None,
-    attrs: Dict[str, str] = {},
-    **kwargs: Dict[str, str],
-) -> bool:
-    """
-    Check if html element exists on website.
-    """
-    if soup.find(
-        name=name, attrs=attrs, recursive=True, string=None, **kwargs
-    ):
-        return True
-    else:
-        return False
-
-def is_text_in_element(
-    soup: BeautifulSoup,
-    target_text: str,
-    name: Union[str, None] = None,
-    attrs: Dict[str, str] = {},
-) -> bool:
-    """
-    Check if text is in html element.
-    """
-    result = soup.find(
-        name=name, attrs=attrs
-    )
-    if result:
-        return target_text in result.get_text()
-    else:
-        return False
-
-
-
-class NotValidHTML(Exception):
-    pass
 
 class Teaser(AbstractContent):
     """
     A class for extracting information from news teaser elements.
     """
-    REQUIRED_ATTRIBUTES = [] 
+
+    REQUIRED_ATTRIBUTES = []
 
     def __init__(self, soup: BeautifulSoup) -> None:
         """
@@ -172,7 +188,6 @@ class Teaser(AbstractContent):
         """
         self.soup = soup
         self.is_valid: Union[None, bool] = None
-
 
     def validate(self):
         """
@@ -192,14 +207,11 @@ class Teaser(AbstractContent):
             self.is_valid = True
         else:
             self.is_valid = False
-            raise NotValidHTML(f'Not valid HTML content for {Teaser.__name__}')
-        
-    
-        
+            raise NotValidHTML(f"Not valid HTML content for {Teaser.__name__}")
+
     def extract(self):
         pass
-        
-        
+
     # def get_data(self):
     #     extracted_data = self.extract_data_from_teaser()
     #     return self.process_extracted_data(extracted_data)
@@ -257,7 +269,6 @@ class Teaser(AbstractContent):
     #     teaser_data["date"] = helper.transform_datetime_str(teaser_data["date"])
     #     self.teaser_info.update(teaser_data)
     #     return teaser_data
-
 
 
 class Article:
