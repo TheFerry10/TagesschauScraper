@@ -1,7 +1,11 @@
+import abc
+from dataclasses import dataclass
 import hashlib
 import os
 from datetime import date, datetime, timedelta
-from typing import Union
+from typing import Dict, Union
+
+from bs4 import BeautifulSoup
 
 
 def transform_datetime_str(datetime_string: str) -> str:
@@ -25,8 +29,8 @@ def transform_datetime_str(datetime_string: str) -> str:
     transform_datetime_str("30.01.2021 -    20:04 Uhr")
     >>> 2021-01-30 20:04:00
     """
-    date, time = [x.strip() for x in datetime_string.split("-")]
-    day, month, year = date.split(".")
+    date_, time = [x.strip() for x in datetime_string.split("-")]
+    day, month, year = date_.split(".")
     hour, minute = time.split(" ")[0].split(":")
     second = "00"
     return f"{year}-{month}-{day} {hour}:{minute}:{second}"
@@ -64,6 +68,7 @@ class DateDirectoryTreeCreator:
         self.date_pattern = date_pattern
         self.date_ = date_
         self.root_dir = root_dir
+        self.file_path = None
 
     def create_file_path_from_date(
         self,
@@ -89,7 +94,9 @@ class DateDirectoryTreeCreator:
             date_pattern = self.date_pattern
         if root_dir is None:
             root_dir = self.root_dir
-        self.file_path = os.path.join(root_dir, self.date_.strftime(date_pattern))
+        self.file_path = os.path.join(
+            root_dir, self.date_.strftime(date_pattern)
+        )
         return self.file_path
 
     def make_dir_tree_from_date(
@@ -181,6 +188,51 @@ def get_date_range(start_date: date, end_date: date) -> list[date]:
     """
     if end_date > start_date:
         days_between = (end_date - start_date).days
-        return [start_date + timedelta(days=days) for days in range(days_between)]
+        return [
+            start_date + timedelta(days=days) for days in range(days_between)
+        ]
     else:
         raise ValueError("end_date must be after start_date.")
+
+
+def cast_to_list(input_: object) -> list[object]:
+    if not isinstance(input_, list):
+        return [input_]
+    return input_
+
+
+@dataclass
+class TagDefinition:
+    name: str
+    attrs: Dict[str, str]
+
+
+class NotValidHTML(Exception):
+    pass
+
+
+class AbstractContent(abc.ABC):
+    @abc.abstractmethod
+    def validate(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def extract(self):
+        raise NotImplementedError
+
+
+def is_tag_in_soup(soup: BeautifulSoup, tag_definition: TagDefinition) -> bool:
+    if soup.find(name=tag_definition.name, attrs=tag_definition.attrs):
+        return True
+    return False
+
+
+def is_text_in_tag(
+    soup: BeautifulSoup,
+    tag_definition: TagDefinition,
+    text: str,
+) -> bool:
+    tag = soup.find(tag_definition.name, tag_definition.attrs)
+    if tag:
+        return text in tag.get_text(strip=True)
+    return False

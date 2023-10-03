@@ -12,8 +12,9 @@ import time
 import os
 import json
 from datetime import datetime
-from tagesschauscraper import helper, tagesschau
-from tagesschauscraper.tagesschau import ARCHIVE_URL
+from tagesschauscraper import helper
+from tagesschauscraper import archive
+from tagesschauscraper.archive import ARCHIVE_URL
 
 # Argument parsing
 parser = argparse.ArgumentParser(
@@ -77,11 +78,11 @@ date_ = datetime.strptime(args.date, input_date_pattern).date()
 logging.info(
     f"Initialize scraping for date {args.date} and category {args.category}"
 )
-archiveFilter = tagesschau.ArchiveFilter(
+archiveFilter = archive.ArchiveFilter(
     {"date": date_, "category": args.category}
 )
-config = tagesschau.ScraperConfig(archiveFilter)
-tagesschauScraper = tagesschau.TagesschauScraper()
+config = archive.ScraperConfig(archiveFilter)
+tagesschauScraper = archive.TagesschauScraper()
 logging.info(
     f"Scraping news from URL {ARCHIVE_URL} with params {config.request_params}"
 )

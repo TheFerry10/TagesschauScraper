@@ -5,6 +5,7 @@
     "paginierung",
     "ressort",
     "tagesschauscraper",
+    "trenner",
     "wirtschaft"
   ],
   "python.testing.pytestArgs": ["tests"],

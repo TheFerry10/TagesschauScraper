@@ -2,7 +2,7 @@ import os
 import shutil
 import unittest
 from datetime import date, datetime
-from tagesschauscraper import helper
+from tagesschauscraper import archive, helper
 
 
 class TestDateDirectoryTreeCreator(unittest.TestCase):
@@ -84,6 +84,13 @@ class TestDateRange(unittest.TestCase):
             helper.get_date_range(date(2022, 1, 1), date(2022, 1, 5)),
             expected_result,
         )
+
+
+def test_creation_of_request_params():
+    expected_params = {"datum": "2023-02-04", "filter": "wirtschaft"}
+    archiveFilter = archive.ArchiveFilter(date(2023, 2, 4), "wirtschaft")
+    request_params = archive.create_request_params(archiveFilter)
+    assert request_params == expected_params
 
 
 if __name__ == "__main__":
