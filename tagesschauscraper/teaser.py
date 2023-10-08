@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 from typing import Union
+
 from bs4 import BeautifulSoup
-from tagesschauscraper.helper import AbstractContent
+
+from tagesschauscraper.helper import AbstractContent, TagDefinition, is_tag_in_soup
 
 
 class Teaser(AbstractContent):
@@ -9,7 +12,9 @@ class Teaser(AbstractContent):
     A class for extracting information from news teaser elements.
     """
 
-    REQUIRED_ATTRIBUTES = []
+    RequiredHTMLContent = {
+        "tagDefinition": TagDefinition("div", {"class": "teaser-right twelve"}),
+    }
 
     def __init__(self, soup: BeautifulSoup) -> None:
         """
@@ -21,7 +26,8 @@ class Teaser(AbstractContent):
             BeautifulSoup object representing an element for a news teaser.
         """
         self.soup = soup
-        self.is_valid: Union[None, bool] = None
+        self.valid = False
+        self.validate()
 
     def validate(self):
         """
@@ -37,64 +43,74 @@ class Teaser(AbstractContent):
         bool
             News teaser information is valid, when the function returns True.
         """
+        self.valid = is_tag_in_soup(
+            self.soup, self.RequiredHTMLContent["tagDefinition"]
+        )
+
+    def extract_article_link(self) -> Union[str, None]:
+        tag = self.soup.find(attrs={"class": "teaser-right__link"})
+        try:
+            article_link = tag.get("href")
+        except AttributeError:
+            article_link = None
+        return article_link
+
+    def extract_topline(self) -> Union[str, None]:
+        tag = self.soup.find(attrs={"class": "teaser-right__labeltopline"})
+        try:
+            text = tag.get_text(strip=True)
+        except AttributeError:
+            text = None
+        return text
+
+    def extract_headline(self) -> Union[str, None]:
+        tag = self.soup.find(attrs={"class": "teaser-right__headline"})
+        try:
+            text = tag.get_text(strip=True)
+        except AttributeError:
+            text = None
+        return text
+
+    def extract_shorttext(self) -> Union[str, None]:
+        tag = self.soup.find(attrs={"class": "teaser-right__shorttext"})
+        try:
+            text = tag.get_text(strip=True)
+            text = " ".join([word.strip() for word in text.split()])
+        except AttributeError:
+            text = None
+        return text
+
+    def extract_date(self) -> Union[str, None]:
+        tag = self.soup.find(attrs={"class": "teaser-right__date"})
+        try:
+            text = tag.get_text(strip=True)
+        except AttributeError:
+            text = None
+        return text
 
     def extract(self):
-        pass
+        """
+        Extracts structured information from a teaser.
+        The extracted elements are:
+        * date
+        * topline
+        * headline
+        * shorttext
+        * article link
 
-    # def get_data(self):
-    #     extracted_data = self.extract_data_from_teaser()
-    #     return self.process_extracted_data(extracted_data)
-
-    # def extract_data_from_teaser(self):
-    #     """
-    #     Extracts structured information from a teaser element.
-    #     The extracted elements are:
-    #     * date
-    #     * topline
-    #     * headline
-    #     * shorttext
-    #     * article link
-
-    #     Returns
-    #     -------
-    #     dict
-    #         A dictionary containing all the information of the news teaser
-    #     """
-    #     field_names_text = ["date", "topline", "headline", "shorttext"]
-    #     field_names_link = ["link"]
-    #     name_html_mapping = {
-    #         key: f"teaser-xs__{key}" for key in field_names_text + field_names_link
-    #     }
-
-    #     for field_name, html_class_name in name_html_mapping.items():
-    #         tag = self.teaser_soup.find(class_=html_class_name)
-    #         if isinstance(tag, Tag):
-    #             if field_name in field_names_text:
-    #                 self.teaser_info[field_name] = tag.get_text(
-    #                     strip=True, separator=" "
-    #                 )
-    #             elif field_name in field_names_link:
-    #                 if isinstance(tag.get("href"), str):
-    #                     self.teaser_info[field_name] = tag.get("href")  # type: ignore
-    #                 else:
-    #                     raise ValueError
-
-    #     return self.teaser_info
-
-    # def process_extracted_data(self, teaser_data):
-    #     """
-    #     Process the extracted teaser information.
-
-    #     Parameters
-    #     ----------
-    #     teaser_info : dict
-    #         Dictionary containing news teaser information.
-
-    #     Returns
-    #     -------
-    #     dict
-    #         Dictionary containing processed teaser information.
-    #     """
-    #     teaser_data["date"] = helper.transform_datetime_str(teaser_data["date"])
-    #     self.teaser_info.update(teaser_data)
-    #     return teaser_data
+        Returns
+        -------
+        dict
+            A dictionary containing all the information of the news teaser
+        """
+        field_extraction_function_pairs = {
+            "date": self.extract_date,
+            "topline": self.extract_topline,
+            "headline": self.extract_headline,
+            "shorttext": self.extract_shorttext,
+            "article_link": self.extract_article_link,
+        }
+        return {
+            field: extraction_function()
+            for field, extraction_function in field_extraction_function_pairs.items()
+        }

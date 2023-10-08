@@ -1,8 +1,11 @@
 from __future__ import annotations
-from datetime import date
+
 from dataclasses import dataclass
+from datetime import date
+
 from bs4 import BeautifulSoup
 from bs4.element import Tag
+
 from tagesschauscraper import constants
 from tagesschauscraper.helper import (
     AbstractContent,
@@ -10,7 +13,6 @@ from tagesschauscraper.helper import (
     is_tag_in_soup,
     is_text_in_tag,
 )
-
 
 ARCHIVE_URL = "https://www.tagesschau.de/archiv/"
 NEWS_CATEGORIES = ["wirtschaft", "inland", "ausland"]
@@ -23,9 +25,7 @@ class ArchiveFilter:
     news_category: str
 
 
-def transform_date(
-    date_: date, date_pattern: str = DEFAULT_DATE_PATTERN
-) -> str:
+def transform_date(date_: date, date_pattern: str = DEFAULT_DATE_PATTERN) -> str:
     return date_.strftime(date_pattern)
 
 
@@ -56,9 +56,7 @@ class Archive(AbstractContent):
     """
 
     RequiredHTMLContent = {
-        "tagDefinition": TagDefinition(
-            "div", {"class": "trenner__text__topline"}
-        ),
+        "tagDefinition": TagDefinition("div", {"class": "trenner__text__topline"}),
         "text": "Archiv",
     }
 
@@ -76,27 +74,36 @@ class Archive(AbstractContent):
         self.validate()
 
     def validate(self) -> None:
+        """
+        Check if scraped information exists for all required attributes.
+
+        Parameters
+        ----------
+        teaser_info : dict
+            Dictionary containing news teaser information.
+
+        Returns
+        -------
+        bool
+            News teaser information is valid, when the function returns True.
+        """
         self.valid = is_tag_in_soup(
-            self.soup, Archive.RequiredHTMLContent["tagDefinition"]
+            self.soup, self.RequiredHTMLContent["tagDefinition"]
         ) & is_text_in_tag(
             self.soup,
-            Archive.RequiredHTMLContent["tagDefinition"],
-            Archive.RequiredHTMLContent["text"],
+            self.RequiredHTMLContent["tagDefinition"],
+            self.RequiredHTMLContent["text"],
         )
 
     def extract(self) -> None:
         pass
 
     def extract_teaser_list(self):
-        teaser_container = self.soup.find_all(
-            "div", {"class": "teaser-right twelve"}
-        )
+        teaser_container = self.soup.find_all("div", {"class": "teaser-right twelve"})
         return teaser_container
 
     def extract_news_categories(self) -> set:
-        category_container = self.soup.find(
-            "ul", {"class": "tabnav__list swipe"}
-        )
+        category_container = self.soup.find("ul", {"class": "tabnav__list swipe"})
         categories: set[str] = set()
         if isinstance(category_container, Tag):
             categories = {
