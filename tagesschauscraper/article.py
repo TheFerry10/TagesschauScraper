@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 from bs4 import BeautifulSoup
-from tagesschauscraper.helper import AbstractContent
+
+from tagesschauscraper.helper import AbstractContent, TagDefinition, is_tag_in_soup
 
 
 class Article(AbstractContent):
@@ -8,32 +10,101 @@ class Article(AbstractContent):
     A class for extracting information from news article HTML elements.
     """
 
+    RequiredHTMLContent = {
+        "tagDefinition": TagDefinition("div", {"class": "seitenkopf__title"}),
+    }
+
     def __init__(self, soup: BeautifulSoup) -> None:
-        self.article_soup = soup
-        self.tags_element = {"class": "taglist"}
+        """
+        Initializes the Teaser with the provided BeautifulSoup element.
 
-    # def is_valid(self) -> bool:
-    #     test = WebsiteTest(self.article_soup)
-    #     required_elements = [
-    #         {"class": "seitenkopf__title"},
-    #         {"class": "seitenkopf__headline"},
-    #         {"class": "taglist"},
-    #     ]
-    #     return any([test.is_element(attrs=r) for r in required_elements])
+        Parameters
+        ----------
+        soup : BeautifulSoup
+            BeautifulSoup object representing an element for a news teaser.
+        """
+        self.soup = soup
+        self.valid = False
+        self.validate()
 
-    # def get_data(self):
-    #     article_tags = self.extract_article_tags()
-    #     article_data = article_tags
-    #     return article_data
+    def validate(self):
+        """
+        Check if scraped information exists for all required attributes.
 
-    # def extract_article_tags(self):
-    #     tags_group = self.article_soup.find(class_="taglist")
-    #     if isinstance(tags_group, Tag):
-    #         tags = [
-    #             tag.get_text(strip=True)
-    #             for tag in tags_group.find_all(class_="tag-btn tag-btn--light-grey")
-    #             if hasattr(tag, "get_text")
-    #         ]
-    #     else:
-    #         tags = []
-    #     return {"tags": ",".join(sorted(tags))}
+        Parameters
+        ----------
+        teaser_info : dict
+            Dictionary containing news teaser information.
+
+        Returns
+        -------
+        bool
+            News teaser information is valid, when the function returns True.
+        """
+        self.valid = is_tag_in_soup(
+            self.soup, self.RequiredHTMLContent["tagDefinition"]
+        )
+
+    def extract(self):
+        raise NotImplementedError
+
+    def extract_topline(self):
+        tag = self.soup.find(attrs={"class": "seitenkopf__topline"})
+        try:
+            text = tag.get_text(strip=True)
+        except AttributeError:
+            text = None
+        return text
+
+    def extract_headline(self):
+        tag = self.soup.find(attrs={"class": "seitenkopf__headline--text"})
+        try:
+            text = tag.get_text(strip=True)
+        except AttributeError:
+            text = None
+        return text
+
+    def extract_metatextline(self):
+        tag = self.soup.find(attrs={"class": "metatextline"})
+        try:
+            text = tag.get_text(strip=True)
+        except AttributeError:
+            text = None
+        return text
+
+    def extract_tags(self):
+        tag = self.soup.find(attrs={"class": "taglist"})
+        article_tags = tag.find_all("li", {"class": "taglist__element"})
+        return [article_tag.get_text(strip=True) for article_tag in article_tags]
+
+    def extract_subheads(self):
+        tags = self.soup.find_all(
+            attrs={
+                "class": "meldung__subhead columns twelve m-ten m-offset-one l-eight l-offset-two liveblog--anchor"
+            }
+        )
+        return [tag.get_text(strip=True) for tag in tags]
+
+    def extract_paragraphs_type_one(self):
+        tag = self.soup.find(
+            attrs={
+                "class": "textabsatz columns twelve m-ten m-offset-one l-eight l-offset-two"
+            }
+        )
+        try:
+            text = tag.get_text(strip=True)
+        except AttributeError:
+            text = None
+        return text
+
+    def extract_paragraphs_type_two(self):
+        tag = self.soup.find(
+            attrs={
+                "class": "textabsatz m-ten m-offset-one l-eight l-offset-two columns twelve"
+            }
+        )
+        try:
+            text = tag.get_text(strip=True)
+        except AttributeError:
+            text = None
+        return text
