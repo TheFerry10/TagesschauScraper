@@ -2,6 +2,7 @@ import os
 import shutil
 import unittest
 from datetime import date, datetime
+
 from tagesschauscraper import archive, helper
 
 
@@ -91,6 +92,13 @@ def test_creation_of_request_params():
     archiveFilter = archive.ArchiveFilter(date(2023, 2, 4), "wirtschaft")
     request_params = archive.create_request_params(archiveFilter)
     assert request_params == expected_params
+
+
+def test_clean_string():
+    input_string = " test      \nthis\n  thing        "
+    expected_clean_string = "test this thing"
+    cleaned_string = helper.clean_string(input_string)
+    assert cleaned_string == expected_clean_string
 
 
 if __name__ == "__main__":

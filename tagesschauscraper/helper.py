@@ -1,7 +1,7 @@
 import abc
-from dataclasses import dataclass
 import hashlib
 import os
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Dict, Union
 
@@ -236,3 +236,7 @@ def is_text_in_tag(
     if tag:
         return text in tag.get_text(strip=True)
     return False
+
+
+def clean_string(string: str):
+    return " ".join([word.strip() for word in string.split()])

@@ -4,7 +4,11 @@ from typing import Union
 
 from bs4 import BeautifulSoup
 
-from tagesschauscraper.helper import AbstractContent, TagDefinition, is_tag_in_soup
+from tagesschauscraper.helper import (
+    AbstractContent,
+    TagDefinition,
+    is_tag_in_soup,
+)
 
 
 class Teaser(AbstractContent):
@@ -13,7 +17,9 @@ class Teaser(AbstractContent):
     """
 
     RequiredHTMLContent = {
-        "tagDefinition": TagDefinition("div", {"class": "teaser-right twelve"}),
+        "tagDefinition": TagDefinition(
+            "div", {"class": "teaser-right twelve"}
+        ),
     }
 
     def __init__(self, soup: BeautifulSoup) -> None:

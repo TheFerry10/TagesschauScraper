@@ -11,7 +11,9 @@ ARTICLE_TEST_DATA_DIR = Path("tests/data/article/")
 @pytest.fixture(name="article_html")
 def teaser_html_(request):
     file_name = request.param
-    with open(ARTICLE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        ARTICLE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     return content
 
@@ -19,7 +21,9 @@ def teaser_html_(request):
 @pytest.fixture(name="valid_article")
 def valid_article_():
     file_name = "valid-article.html"
-    with open(ARTICLE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        ARTICLE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     soup = BeautifulSoup(content, "html.parser")
     return article.Article(soup)
@@ -59,37 +63,40 @@ def test_extract_metatextline(valid_article: article.Article):
 
 def test_extract_subheads(valid_article: article.Article):
     expected_subheads = [
-        "Offenbar-150-Kreditkartendaten-betroffen",
-        "Notfalllisten-mit-Kundendaten-im-Darkweb",
+        "\n    Offenbar 150 Kreditkartendaten betroffen\n  ",
+        '\n    "Notfalllisten" mit Kundendaten im Darkweb\n  ',
     ]
     subheads = valid_article.extract_subheads()
     assert subheads == expected_subheads
 
 
+def test_extract_abstract(valid_article: article.Article):
+    expected_abstract = (
+        '\nNach einem Hackerangriff auf die Hotelkette "Motel One" sind laut'
+        " einem\n      Medienbericht Millionen Namen und Reisedaten von Gästen"
+        " online zu finden.\n      Sechs Terabyte wurden laut dem Unternehmen"
+        " gestohlen - darunter auch\n      Kreditkartendaten.\n"
+    )
+    abstract = valid_article.extract_abstract()
+    assert abstract == expected_abstract
+
+
 def test_extract_paragraphs(valid_article: article.Article):
     expected_paragraphs = [
-        (
-            'Nach einem Hackerangriff auf die Hotelkette "Motel One" sind laut'
-            " einem Medienbericht Millionen Namen und Reisedaten von Gästen"
-            " online zu finden. Sechs Terabyte wurden laut dem Unternehmen"
-            " gestohlen - darunter auch Kreditkartendaten."
-        ),
-        (
-            'Bei der Hotelkette "Motel One" haben Hacker in großem Stil Daten'
-            " mit privaten Informationen von Gästen geklaut und im Darknet"
-            ' veröffentlicht. "Nach vorläufigen Erkenntnissen betreffen die'
-            " gestohlenen Daten im Volumen von sechs Terabyte insbesondere"
-            " Adress- und Rechnungsdaten von Kunden und nur sehr vereinzelt"
-            ' Kreditkarteninformationen unserer Hotelgäste", sagte eine'
-            " Sprecherin des Unternehmens auf Anfrage der Nachrichtenagentur"
-            " dpa. "
-        ),
+        '\n    Bei der Hotelkette "Motel One" haben Hacker in großem Stil'
+        " Daten mit\n    privaten Informationen von Gästen geklaut und im"
+        ' Darknet veröffentlicht.\n    "Nach vorläufigen Erkenntnissen'
+        " betreffen die gestohlenen Daten im Volumen\n    von sechs Terabyte"
+        " insbesondere Adress- und Rechnungsdaten von Kunden und\n    nur sehr"
+        ' vereinzelt Kreditkarteninformationen unserer Hotelgäste", sagte\n   '
+        " eine Sprecherin des Unternehmens auf Anfrage der Nachrichtenagentur"
+        " dpa.\n  "
     ]
     paragraphs = valid_article.extract_paragraphs()
     assert paragraphs == expected_paragraphs
 
 
 def test_extract_tags(valid_article: article.Article):
-    expected_tags = ["Hackerangriff", "Darknet", "Hotel"]
+    expected_tags = ["\nHackerangriff\n", "\nDarknet\n", "\nHotel\n"]
     tags = valid_article.extract_tags()
     assert tags == expected_tags

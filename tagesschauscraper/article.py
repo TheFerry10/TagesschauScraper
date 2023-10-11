@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from bs4 import BeautifulSoup
 
-from tagesschauscraper.helper import AbstractContent, TagDefinition, is_tag_in_soup
+from tagesschauscraper.helper import (
+    AbstractContent,
+    TagDefinition,
+    clean_string,
+    is_tag_in_soup,
+)
 
 
 class Article(AbstractContent):
@@ -51,7 +56,7 @@ class Article(AbstractContent):
     def extract_topline(self):
         tag = self.soup.find(attrs={"class": "seitenkopf__topline"})
         try:
-            text = tag.get_text(strip=True)
+            text = tag.get_text()
         except AttributeError:
             text = None
         return text
@@ -59,7 +64,7 @@ class Article(AbstractContent):
     def extract_headline(self):
         tag = self.soup.find(attrs={"class": "seitenkopf__headline--text"})
         try:
-            text = tag.get_text(strip=True)
+            text = tag.get_text()
         except AttributeError:
             text = None
         return text
@@ -67,7 +72,7 @@ class Article(AbstractContent):
     def extract_metatextline(self):
         tag = self.soup.find(attrs={"class": "metatextline"})
         try:
-            text = tag.get_text(strip=True)
+            text = tag.get_text()
         except AttributeError:
             text = None
         return text
@@ -75,36 +80,41 @@ class Article(AbstractContent):
     def extract_tags(self):
         tag = self.soup.find(attrs={"class": "taglist"})
         article_tags = tag.find_all("li", {"class": "taglist__element"})
-        return [article_tag.get_text(strip=True) for article_tag in article_tags]
+        return [article_tag.get_text() for article_tag in article_tags]
 
     def extract_subheads(self):
         tags = self.soup.find_all(
             attrs={
-                "class": "meldung__subhead columns twelve m-ten m-offset-one l-eight l-offset-two liveblog--anchor"
+                "class": (
+                    "meldung__subhead columns twelve m-ten m-offset-one"
+                    " l-eight l-offset-two liveblog--anchor"
+                )
             }
         )
-        return [tag.get_text(strip=True) for tag in tags]
+        return [tag.get_text() for tag in tags]
 
-    def extract_paragraphs_type_one(self):
+    def extract_abstract(self):
         tag = self.soup.find(
             attrs={
-                "class": "textabsatz columns twelve m-ten m-offset-one l-eight l-offset-two"
+                "class": (
+                    "textabsatz columns twelve m-ten m-offset-one l-eight"
+                    " l-offset-two"
+                )
             }
         )
         try:
-            text = tag.get_text(strip=True)
+            text = tag.get_text()
         except AttributeError:
             text = None
         return text
 
-    def extract_paragraphs_type_two(self):
-        tag = self.soup.find(
+    def extract_paragraphs(self):
+        tags = self.soup.find_all(
             attrs={
-                "class": "textabsatz m-ten m-offset-one l-eight l-offset-two columns twelve"
+                "class": (
+                    "textabsatz m-ten m-offset-one l-eight l-offset-two"
+                    " columns twelve"
+                )
             }
         )
-        try:
-            text = tag.get_text(strip=True)
-        except AttributeError:
-            text = None
-        return text
+        return [tag.get_text() for tag in tags]
