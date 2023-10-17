@@ -11,9 +11,7 @@ TEASER_TEST_DATA_DIR = Path("tests/data/teaser/")
 @pytest.fixture(name="teaser_html")
 def teaser_html_(request):
     file_name = request.param
-    with open(
-        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
+    with open(TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
         content = f.read()
     return content
 
@@ -21,9 +19,7 @@ def teaser_html_(request):
 @pytest.fixture(name="valid_teaser")
 def valid_teaser_():
     file_name = "valid-teaser.html"
-    with open(
-        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
+    with open(TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
         content = f.read()
     soup = BeautifulSoup(content, "html.parser")
     return teaser.Teaser(soup)
@@ -46,8 +42,12 @@ def test_teaser_with_input(teaser_html, is_valid):
 @pytest.mark.parametrize(
     "teaser_html,expected_link_to_article",
     [
-        ("valid-teaser.html", "/ausland/asien/gaza-israel-angriff-108.html"),
-        ("invalid-teaser.html", None),
+        pytest.param(
+            "valid-teaser.html",
+            "/ausland/asien/gaza-israel-angriff-108.html",
+            id="valid",
+        ),
+        pytest.param("invalid-teaser.html", None, id="invalid"),
     ],
     indirect=["teaser_html"],
 )
@@ -71,7 +71,7 @@ def test_extract_headline(valid_teaser):
 
 
 def test_extract_shorttext(valid_teaser):
-    expected_shorttext = """Nach den massiven Angriffen der Hamas gehen die Gefechte auf israelischem Boden weiter. Die Zahl der Toten steigt auf beiden Seiten: Insgesamt wurden mehr als 600 Opfer gemeldet. Laut Israel hält die Hamas weiterhin Geiseln fest.mehr"""
+    expected_shorttext = """\n                    Nach den massiven Angriffen der Hamas gehen die Gefechte auf\n                    israelischem Boden weiter. Die Zahl der Toten steigt auf beiden\n                    Seiten: Insgesamt wurden mehr als 600 Opfer gemeldet. Laut Israel hält\n                    die Hamas weiterhin Geiseln fest.\n                    mehr\n"""
     shorttext = valid_teaser.extract_shorttext()
     assert shorttext == expected_shorttext
 
@@ -84,7 +84,7 @@ def test_extract_date(valid_teaser):
 
 def test_extract(valid_teaser):
     expected_date = "08.10.2023 • 13:17 Uhr"
-    expected_shorttext = """Nach den massiven Angriffen der Hamas gehen die Gefechte auf israelischem Boden weiter. Die Zahl der Toten steigt auf beiden Seiten: Insgesamt wurden mehr als 600 Opfer gemeldet. Laut Israel hält die Hamas weiterhin Geiseln fest.mehr"""
+    expected_shorttext = """\n                    Nach den massiven Angriffen der Hamas gehen die Gefechte auf\n                    israelischem Boden weiter. Die Zahl der Toten steigt auf beiden\n                    Seiten: Insgesamt wurden mehr als 600 Opfer gemeldet. Laut Israel hält\n                    die Hamas weiterhin Geiseln fest.\n                    mehr\n"""
     expected_headline = "Weiter Kämpfe an mehreren Orten"
     expected_topline = "Hamas-Großangriff auf Israel"
     expected_article_link = "/ausland/asien/gaza-israel-angriff-108.html"

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Dict, Union
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 
 def transform_datetime_str(datetime_string: str) -> str:
@@ -240,3 +240,17 @@ def is_text_in_tag(
 
 def clean_string(string: str):
     return " ".join([word.strip() for word in string.split()])
+
+
+def extract_link(tag: Tag) -> Union[str, None]:
+    article_link = tag.get("href")
+    if isinstance(article_link, str):
+        return article_link
+    return None
+
+
+def extract_text(tag: Tag) -> Union[str, None]:
+    text = tag.get_text()
+    if isinstance(text, str):
+        return text
+    return None

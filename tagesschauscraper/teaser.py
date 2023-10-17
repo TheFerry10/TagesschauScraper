@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from typing import Union
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from tagesschauscraper.helper import (
     AbstractContent,
     TagDefinition,
+    extract_link,
+    extract_text,
     is_tag_in_soup,
 )
 
@@ -55,44 +57,28 @@ class Teaser(AbstractContent):
 
     def extract_article_link(self) -> Union[str, None]:
         tag = self.soup.find(attrs={"class": "teaser-right__link"})
-        try:
-            article_link = tag.get("href")
-        except AttributeError:
-            article_link = None
-        return article_link
+        if isinstance(tag, Tag):
+            return extract_link(tag)
 
     def extract_topline(self) -> Union[str, None]:
         tag = self.soup.find(attrs={"class": "teaser-right__labeltopline"})
-        try:
-            text = tag.get_text(strip=True)
-        except AttributeError:
-            text = None
-        return text
+        if isinstance(tag, Tag):
+            return extract_text(tag)
 
     def extract_headline(self) -> Union[str, None]:
         tag = self.soup.find(attrs={"class": "teaser-right__headline"})
-        try:
-            text = tag.get_text(strip=True)
-        except AttributeError:
-            text = None
-        return text
+        if isinstance(tag, Tag):
+            return extract_text(tag)
 
     def extract_shorttext(self) -> Union[str, None]:
         tag = self.soup.find(attrs={"class": "teaser-right__shorttext"})
-        try:
-            text = tag.get_text(strip=True)
-            text = " ".join([word.strip() for word in text.split()])
-        except AttributeError:
-            text = None
-        return text
+        if isinstance(tag, Tag):
+            return extract_text(tag)
 
     def extract_date(self) -> Union[str, None]:
         tag = self.soup.find(attrs={"class": "teaser-right__date"})
-        try:
-            text = tag.get_text(strip=True)
-        except AttributeError:
-            text = None
-        return text
+        if isinstance(tag, Tag):
+            return extract_text(tag)
 
     def extract(self):
         """

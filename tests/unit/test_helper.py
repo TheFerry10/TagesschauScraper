@@ -3,6 +3,8 @@ import shutil
 import unittest
 from datetime import date, datetime
 
+from bs4 import BeautifulSoup
+
 from tagesschauscraper import archive, helper
 
 
@@ -101,5 +103,17 @@ def test_clean_string():
     assert cleaned_string == expected_clean_string
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_extract_link_from_tag():
+    expected_link = "/test/url/sample.html"
+    html_with_link = f'<a class="link" href={expected_link}>'
+    tag_with_link = BeautifulSoup(html_with_link, "html.parser").a
+    link = helper.extract_link(tag_with_link)  # type: ignore
+    assert link == expected_link
+
+
+def test_extract_text_from_tag():
+    expected_text = "This is /n some sample text!  "
+    html_with_text = f'<span class="text">{expected_text}</span>'
+    tag_with_text = BeautifulSoup(html_with_text, "html.parser").span
+    text = helper.extract_text(tag_with_text)  # type: ignore
+    assert text == expected_text
