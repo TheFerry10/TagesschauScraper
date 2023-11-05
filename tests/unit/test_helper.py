@@ -36,9 +36,7 @@ class TestDateDirectoryTreeCreator(unittest.TestCase):
         self.assertTrue(self.true_file_path)
 
     def test_make_dir_tree_from_file_path(self) -> None:
-        self.dateDirectoryTreeCreator.make_dir_tree_from_file_path(
-            self.true_file_path
-        )
+        self.dateDirectoryTreeCreator.make_dir_tree_from_file_path(self.true_file_path)
         self.assertTrue(self.true_file_path)
 
 

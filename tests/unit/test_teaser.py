@@ -11,7 +11,9 @@ TEASER_TEST_DATA_DIR = Path("tests/data/teaser/")
 @pytest.fixture(name="teaser_html")
 def teaser_html_(request):
     file_name = request.param
-    with open(TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     return content
 
@@ -19,7 +21,9 @@ def teaser_html_(request):
 @pytest.fixture(name="valid_teaser")
 def valid_teaser_():
     file_name = "valid-teaser.html"
-    with open(TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     soup = BeautifulSoup(content, "html.parser")
     return teaser.Teaser(soup)

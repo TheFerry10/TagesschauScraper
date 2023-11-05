@@ -19,9 +19,7 @@ class Teaser(AbstractContent):
     """
 
     RequiredHTMLContent = {
-        "tagDefinition": TagDefinition(
-            "div", {"class": "teaser-right twelve"}
-        ),
+        "tagDefinition": TagDefinition("div", {"class": "teaser-right twelve"}),
     }
 
     def __init__(self, soup: BeautifulSoup) -> None:
