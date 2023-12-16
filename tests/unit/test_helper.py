@@ -3,6 +3,7 @@ import shutil
 import unittest
 from datetime import date, datetime
 
+import pytest
 from bs4 import BeautifulSoup
 
 from tagesschauscraper import archive, helper
@@ -87,11 +88,24 @@ class TestDateRange(unittest.TestCase):
         )
 
 
-def test_creation_of_request_params():
+def test_creation_of_valid_request_params():
     expected_params = {"datum": "2023-02-04", "filter": "wirtschaft"}
     archiveFilter = archive.ArchiveFilter(date(2023, 2, 4), "wirtschaft")
     request_params = archive.create_request_params(archiveFilter)
     assert request_params == expected_params
+
+
+def test_creation_of_valid_request_params_category_is_none():
+    expected_params = {"datum": "2023-02-04", "filter": None}
+    archiveFilter = archive.ArchiveFilter(date(2023, 2, 4), None)
+    request_params = archive.create_request_params(archiveFilter)
+    assert request_params == expected_params
+
+
+def test_creation_of_invalid_request_params():
+    archiveFilter = archive.ArchiveFilter(date(2023, 2, 4), "invalidCategory")
+    with pytest.raises(Exception):
+        archive.create_request_params(archiveFilter)
 
 
 def test_clean_string():

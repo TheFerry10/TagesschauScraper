@@ -10,24 +10,24 @@ from bs4.element import Tag
 from requests import Response
 
 from tagesschauscraper import constants
-from tagesschauscraper.helper import (
+from tagesschauscraper.constants import (
+    ARCHIVE_URL,
+    DEFAULT_DATE_PATTERN,
     DEFAULT_TIMEOUT,
+    NEWS_CATEGORIES,
+)
+from tagesschauscraper.helper import (
     AbstractContent,
     TagDefinition,
     is_tag_in_soup,
     is_text_in_tag,
 )
 
-ARCHIVE_URL = "https://www.tagesschau.de/archiv"
-TAGESSCHAU_URL = "https://www.tagesschau.de"
-NEWS_CATEGORIES = ["wirtschaft", "inland", "ausland"]
-DEFAULT_DATE_PATTERN = "%Y-%m-%d"
-
 
 @dataclass(frozen=True)
 class ArchiveFilter:
     date: date
-    news_category: str
+    news_category: str | None
 
 
 def transform_date(date_: date, date_pattern: str = DEFAULT_DATE_PATTERN) -> str:
@@ -125,11 +125,18 @@ class Archive(AbstractContent):
             return date_tag.get_text(strip=True)
 
 
+def is_category_valid(category: str | None) -> bool:
+    return (category in NEWS_CATEGORIES) | (category is None)
+
+
 def create_request_params(archive_filter: ArchiveFilter) -> dict:
-    return {
-        "datum": transform_date(archive_filter.date),
-        "filter": archive_filter.news_category,
-    }
+    if is_category_valid(archive_filter.news_category):
+        return {
+            "datum": transform_date(archive_filter.date),
+            "filter": archive_filter.news_category,
+        }
+    else:
+        raise ValueError
 
 
 def get_archive_response(request_params: dict) -> Union[Response, None]:
@@ -151,3 +158,9 @@ def get_archive_response(request_params: dict) -> Union[Response, None]:
         return response
     else:
         return None
+
+
+def get_archive_html(archive_filter: ArchiveFilter) -> BeautifulSoup:
+    request_params = create_request_params(archive_filter)
+    response = requests.get(ARCHIVE_URL, params=request_params)
+    return BeautifulSoup(response.text, "html.parser")

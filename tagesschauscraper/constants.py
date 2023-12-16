@@ -13,3 +13,8 @@ german_month_names = [
     "November",
     "Dezember",
 ]
+ARCHIVE_URL = "https://www.tagesschau.de/archiv"
+TAGESSCHAU_URL = "https://www.tagesschau.de"
+NEWS_CATEGORIES = ["wirtschaft", "inland", "ausland"]
+DEFAULT_DATE_PATTERN = "%Y-%m-%d"
+DEFAULT_TIMEOUT = 5

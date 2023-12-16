@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from typing import Union
+import csv
+import os
+from datetime import date, datetime
+from typing import Sequence, Union
 
 from bs4 import BeautifulSoup, Tag
 
@@ -78,6 +81,9 @@ class Teaser(AbstractContent):
         if isinstance(tag, Tag):
             return extract_text(tag)
 
+    def get_extraction_timestamp(self) -> str:
+        return datetime.utcnow().replace(microsecond=0).isoformat()
+
     def extract(self):
         """
         Extracts structured information from a teaser.
@@ -94,13 +100,32 @@ class Teaser(AbstractContent):
             A dictionary containing all the information of the news teaser
         """
         field_extraction_function_pairs = {
-            "date": self.extract_date,
-            "topline": self.extract_topline,
-            "headline": self.extract_headline,
-            "shorttext": self.extract_shorttext,
-            "article_link": self.extract_article_link,
+            "DATE": self.extract_date,
+            "TOPLINE": self.extract_topline,
+            "HEADLINE": self.extract_headline,
+            "SHORTTEXT": self.extract_shorttext,
+            "ARTICLE_LINK": self.extract_article_link,
+            "EXTRACTION_TIMESTAMP": self.get_extraction_timestamp,
         }
         return {
             field: extraction_function()
             for field, extraction_function in field_extraction_function_pairs.items()
         }
+
+
+def write_teaser_list(teaser_list: Sequence[dict]):
+    datetime_str = datetime.utcnow().replace(microsecond=0).strftime("%Y%m%d%H%M")
+    output_dir = "data"
+    file_name = f"teaser_{datetime_str}.csv"
+    with open(os.path.join(output_dir, file_name), "w", newline="") as csvfile:
+        fieldnames = [
+            "DATE",
+            "TOPLINE",
+            "HEADLINE",
+            "SHORTTEXT",
+            "ARTICLE_LINK",
+            "EXTRACTION_TIMESTAMP",
+        ]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(teaser_list)

@@ -1,7 +1,13 @@
 from __future__ import annotations
 
-from bs4 import BeautifulSoup
+from typing import Union
+from urllib.parse import urljoin
 
+import requests
+from bs4 import BeautifulSoup
+from requests import Response
+
+from tagesschauscraper.constants import DEFAULT_TIMEOUT, TAGESSCHAU_URL
 from tagesschauscraper.helper import (
     AbstractContent,
     TagDefinition,
@@ -50,8 +56,8 @@ class Article(AbstractContent):
             self.soup, self.RequiredHTMLContent["tagDefinition"]
         )
 
-    def extract(self):
-        raise NotImplementedError
+    def extract(self) -> dict:
+        return {"tags": self.extract_tags()}
 
     def extract_topline(self):
         tag = self.soup.find(attrs={"class": "seitenkopf__topline"})
@@ -118,3 +124,25 @@ class Article(AbstractContent):
             }
         )
         return [tag.get_text() for tag in tags]
+
+
+def get_article_response(link: str) -> Union[Response, None]:
+    """
+    Service for retrieving the html of the article.
+
+    Parameters
+    ----------
+    request_params : dict
+        HTTP request params
+
+    Returns
+    -------
+    str
+        HTML of archive
+    """
+    url = urljoin(TAGESSCHAU_URL, link)
+    response = requests.get(url, timeout=DEFAULT_TIMEOUT)
+    if response.ok:
+        return response
+    else:
+        return None

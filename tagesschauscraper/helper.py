@@ -7,8 +7,6 @@ from typing import Dict, Union
 
 from bs4 import BeautifulSoup, Tag
 
-DEFAULT_TIMEOUT = 5
-
 
 def transform_datetime_str(datetime_string: str) -> str:
     """
@@ -250,5 +248,5 @@ def extract_link(tag: Tag) -> Union[str, None]:
 def extract_text(tag: Tag) -> Union[str, None]:
     text = tag.get_text()
     if isinstance(text, str):
-        return text
+        return clean_string(text)
     return None
