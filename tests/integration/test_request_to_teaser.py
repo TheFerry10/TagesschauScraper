@@ -15,7 +15,7 @@ from tagesschauscraper.archive import (
 )
 from tagesschauscraper.article import Article, get_article_response
 from tagesschauscraper.constants import ARCHIVE_URL, TAGESSCHAU_URL
-from tagesschauscraper.teaser import Teaser
+from tagesschauscraper.teaser import TeaserScraper
 
 ARCHIVE_TEST_DATA_DIR = Path("tests/data/archive/")
 ARTICLE_TEST_DATA_DIR = Path("tests/data/article/")
@@ -73,7 +73,7 @@ def test_integration_between_archive_and_teaser_extraction(
     soup = BeautifulSoup(archive_with_teaser_list_html, "html.parser")
     archive = Archive(soup)
     extracted_teaser_list = [
-        Teaser(teaser).extract() for teaser in archive.extract_teaser_list()
+        TeaserScraper(teaser).extract() for teaser in archive.extract_teaser_list()
     ]
     assert extracted_teaser_list == expected_teaser_list
 

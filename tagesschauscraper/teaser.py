@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import csv
+import datetime
 import os
-from datetime import date, datetime
+from dataclasses import dataclass
 from typing import Sequence, Union
 
 from bs4 import BeautifulSoup, Tag
@@ -16,7 +17,17 @@ from tagesschauscraper.helper import (
 )
 
 
-class Teaser(AbstractContent):
+@dataclass(frozen=True)
+class Teaser:
+    date: str | None
+    topline: str | None
+    headline: str | None
+    shorttext: str | None
+    article_link: str | None
+    extraction_timestamp: str | None = None
+
+
+class TeaserScraper(AbstractContent):
     """
     A class for extracting information from news teaser elements.
     """
@@ -81,43 +92,35 @@ class Teaser(AbstractContent):
         if isinstance(tag, Tag):
             return extract_text(tag)
 
-    def get_extraction_timestamp(self) -> str:
-        return datetime.utcnow().replace(microsecond=0).isoformat()
+    def get_extraction_timestamp(
+        self, extraction_timestamp: datetime.datetime | None = None
+    ) -> str:
+        if extraction_timestamp:
+            return extraction_timestamp.replace(microsecond=0).isoformat()
+        else:
+            return datetime.datetime.utcnow().replace(microsecond=0).isoformat()
 
-    def extract(self):
-        """
-        Extracts structured information from a teaser.
-        The extracted elements are:
-        * date
-        * topline
-        * headline
-        * shorttext
-        * article link
-
-        Returns
-        -------
-        dict
-            A dictionary containing all the information of the news teaser
-        """
-        field_extraction_function_pairs = {
-            "DATE": self.extract_date,
-            "TOPLINE": self.extract_topline,
-            "HEADLINE": self.extract_headline,
-            "SHORTTEXT": self.extract_shorttext,
-            "ARTICLE_LINK": self.extract_article_link,
-            "EXTRACTION_TIMESTAMP": self.get_extraction_timestamp,
-        }
-        return {
-            field: extraction_function()
-            for field, extraction_function in field_extraction_function_pairs.items()
-        }
+    def extract(self, extraction_timestamp: datetime.datetime | None = None) -> Teaser:
+        teaser = Teaser(
+            date=self.extract_date(),
+            topline=self.extract_topline(),
+            headline=self.extract_headline(),
+            shorttext=self.extract_shorttext(),
+            article_link=self.extract_article_link(),
+            extraction_timestamp=self.get_extraction_timestamp(extraction_timestamp),
+        )
+        return teaser
 
 
 def write_teaser_list(teaser_list: Sequence[dict]):
-    datetime_str = datetime.utcnow().replace(microsecond=0).strftime("%Y%m%d%H%M")
+    datetime_str = (
+        datetime.datetime.utcnow().replace(microsecond=0).strftime("%Y%m%d%H%M")
+    )
     output_dir = "data"
     file_name = f"teaser_{datetime_str}.csv"
-    with open(os.path.join(output_dir, file_name), "w", newline="") as csvfile:
+    with open(
+        os.path.join(output_dir, file_name), "w", newline="", encoding="utf8"
+    ) as csv_file:
         fieldnames = [
             "DATE",
             "TOPLINE",
@@ -126,6 +129,10 @@ def write_teaser_list(teaser_list: Sequence[dict]):
             "ARTICLE_LINK",
             "EXTRACTION_TIMESTAMP",
         ]
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(teaser_list)
+
+
+def remove_extraction_timestamp(teaser: Teaser):
+    return setattr(teaser, "extraction_timestamp", None)

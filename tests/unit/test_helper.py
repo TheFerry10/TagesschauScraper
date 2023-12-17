@@ -124,7 +124,7 @@ def test_extract_link_from_tag():
 
 
 def test_extract_text_from_tag():
-    expected_text = "This is /n some sample text!  "
+    expected_text = "This is /n some sample text!"
     html_with_text = f'<span class="text">{expected_text}</span>'
     tag_with_text = BeautifulSoup(html_with_text, "html.parser").span
     text = helper.extract_text(tag_with_text)  # type: ignore

@@ -1,12 +1,12 @@
 import datetime
 from pathlib import Path
-from typing import Dict, List
 from unittest.mock import patch
 
 import pytest
 
 from tagesschauscraper.archive import ArchiveFilter
-from tagesschauscraper.domain import scrape_teaser
+from tagesschauscraper.service import scrape_teaser
+from tagesschauscraper.teaser import remove_extraction_timestamp
 
 ARCHIVE_TEST_DATA_DIR = Path("tests/data/archive/")
 
@@ -38,9 +38,3 @@ def test_scrape_all_teaser_for_date(mock_get, expected_archive_html):
     )
     teaser_list = scrape_teaser(archive_filter)
     assert expected_teaser_list == remove_extraction_timestamp(teaser_list)
-
-
-def remove_extraction_timestamp(teaser_list: List[Dict]):
-    for t in teaser_list:
-        t["EXTRACTION_TIMESTAMP"] = None
-    return teaser_list

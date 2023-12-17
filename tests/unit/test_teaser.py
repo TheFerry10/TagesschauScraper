@@ -1,9 +1,11 @@
+import datetime
 from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
 
 from tagesschauscraper import teaser
+from tagesschauscraper.teaser import Teaser
 
 TEASER_TEST_DATA_DIR = Path("tests/data/teaser/")
 
@@ -11,9 +13,7 @@ TEASER_TEST_DATA_DIR = Path("tests/data/teaser/")
 @pytest.fixture(name="teaser_html")
 def teaser_html_(request):
     file_name = request.param
-    with open(
-        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
+    with open(TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
         content = f.read()
     return content
 
@@ -21,12 +21,10 @@ def teaser_html_(request):
 @pytest.fixture(name="valid_teaser")
 def valid_teaser_():
     file_name = "valid-teaser.html"
-    with open(
-        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
+    with open(TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
         content = f.read()
     soup = BeautifulSoup(content, "html.parser")
-    return teaser.Teaser(soup)
+    return teaser.TeaserScraper(soup)
 
 
 @pytest.mark.parametrize(
@@ -39,7 +37,7 @@ def valid_teaser_():
 )
 def test_teaser_with_input(teaser_html, is_valid):
     soup = BeautifulSoup(teaser_html, "html.parser")
-    teaser_ = teaser.Teaser(soup)
+    teaser_ = teaser.TeaserScraper(soup)
     assert teaser_.valid is is_valid
 
 
@@ -48,7 +46,7 @@ def test_teaser_with_input(teaser_html, is_valid):
     [
         pytest.param(
             "valid-teaser.html",
-            "/ausland/asien/gaza-israel-angriff-108.html",
+            "/ausland/test/tag1-tag2-108.html",
             id="valid",
         ),
         pytest.param("invalid-teaser.html", None, id="invalid"),
@@ -57,25 +55,25 @@ def test_teaser_with_input(teaser_html, is_valid):
 )
 def test_extract_link_to_article(teaser_html, expected_link_to_article):
     soup = BeautifulSoup(teaser_html, "html.parser")
-    teaser_ = teaser.Teaser(soup)
+    teaser_ = teaser.TeaserScraper(soup)
     link_to_article = teaser_.extract_article_link()
     assert expected_link_to_article == link_to_article
 
 
 def test_extract_topline(valid_teaser):
-    expected_topline = "Hamas-Großangriff auf Israel"
+    expected_topline = "Test topline"
     topline = valid_teaser.extract_topline()
     assert topline == expected_topline
 
 
 def test_extract_headline(valid_teaser):
-    expected_headline = "Weiter Kämpfe an mehreren Orten"
+    expected_headline = "Test headline"
     headline = valid_teaser.extract_headline()
     assert headline == expected_headline
 
 
 def test_extract_shorttext(valid_teaser):
-    expected_shorttext = """\n                    Nach den massiven Angriffen der Hamas gehen die Gefechte auf\n                    israelischem Boden weiter. Die Zahl der Toten steigt auf beiden\n                    Seiten: Insgesamt wurden mehr als 600 Opfer gemeldet. Laut Israel hält\n                    die Hamas weiterhin Geiseln fest.\n                    mehr\n"""
+    expected_shorttext = "Test short text"
     shorttext = valid_teaser.extract_shorttext()
     assert shorttext == expected_shorttext
 
@@ -88,16 +86,18 @@ def test_extract_date(valid_teaser):
 
 def test_extract(valid_teaser):
     expected_date = "08.10.2023 • 13:17 Uhr"
-    expected_shorttext = """\n                    Nach den massiven Angriffen der Hamas gehen die Gefechte auf\n                    israelischem Boden weiter. Die Zahl der Toten steigt auf beiden\n                    Seiten: Insgesamt wurden mehr als 600 Opfer gemeldet. Laut Israel hält\n                    die Hamas weiterhin Geiseln fest.\n                    mehr\n"""
-    expected_headline = "Weiter Kämpfe an mehreren Orten"
-    expected_topline = "Hamas-Großangriff auf Israel"
-    expected_article_link = "/ausland/asien/gaza-israel-angriff-108.html"
-    expected_teaser_info = {
-        "date": expected_date,
-        "topline": expected_topline,
-        "headline": expected_headline,
-        "shorttext": expected_shorttext,
-        "article_link": expected_article_link,
-    }
-    teaser_info = valid_teaser.extract()
-    assert teaser_info == expected_teaser_info
+    expected_shorttext = "Test short text"
+    expected_headline = "Test headline"
+    expected_topline = "Test topline"
+    expected_article_link = "/ausland/test/tag1-tag2-108.html"
+    expected_extraction_date = "2023-01-01T00:00:00"
+    expectedTeaser = Teaser(
+        date=expected_date,
+        shorttext=expected_shorttext,
+        headline=expected_headline,
+        topline=expected_topline,
+        article_link=expected_article_link,
+        extraction_timestamp=expected_extraction_date,
+    )
+    teaser_ = valid_teaser.extract(extraction_timestamp=datetime.datetime(2023, 1, 1))
+    assert teaser_ == expectedTeaser
