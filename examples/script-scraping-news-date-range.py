@@ -29,14 +29,18 @@ parser.add_argument(
     metavar="start",
     type=str,
     help=(
-        "Start date for date range (inclusive). Accepted date format is" " YYYY-MM-DD"
+        "Start date for date range (inclusive). Accepted date format is"
+        " YYYY-MM-DD"
     ),
 )
 parser.add_argument(
     "end_date",
     metavar="end",
     type=str,
-    help=("End date for date range (exclusive). Accepted date format is" " YYYY-MM-DD"),
+    help=(
+        "End date for date range (exclusive). Accepted date format is"
+        " YYYY-MM-DD"
+    ),
 )
 parser.add_argument(
     "--category",
@@ -85,7 +89,8 @@ logging.info(
     " and category {args.category}"
 )
 archiveFilters = [
-    archive.ArchiveFilter({"date": date_, "category": args.category}) for date_ in dates
+    archive.ArchiveFilter({"date": date_, "category": args.category})
+    for date_ in dates
 ]
 config = archive.ScraperConfig(archiveFilters)
 tagesschauScraper = archive.TagesschauScraper()

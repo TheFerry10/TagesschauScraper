@@ -1,19 +1,19 @@
 import datetime
-from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
 
 from tagesschauscraper import teaser
+from tagesschauscraper.constants import TEASER_TEST_DATA_DIR
 from tagesschauscraper.teaser import Teaser
-
-TEASER_TEST_DATA_DIR = Path("tests/data/teaser/")
 
 
 @pytest.fixture(name="teaser_html")
 def teaser_html_(request):
     file_name = request.param
-    with open(TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     return content
 
@@ -21,7 +21,9 @@ def teaser_html_(request):
 @pytest.fixture(name="valid_teaser")
 def valid_teaser_():
     file_name = "valid-teaser.html"
-    with open(TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     soup = BeautifulSoup(content, "html.parser")
     return teaser.TeaserScraper(soup)
@@ -99,5 +101,7 @@ def test_extract(valid_teaser):
         article_link=expected_article_link,
         extraction_timestamp=expected_extraction_date,
     )
-    teaser_ = valid_teaser.extract(extraction_timestamp=datetime.datetime(2023, 1, 1))
+    teaser_ = valid_teaser.extract(
+        extraction_timestamp=datetime.datetime(2023, 1, 1)
+    )
     assert teaser_ == expectedTeaser

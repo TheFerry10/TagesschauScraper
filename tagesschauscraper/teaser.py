@@ -9,7 +9,7 @@ from typing import Sequence, Union
 from bs4 import BeautifulSoup, Tag
 
 from tagesschauscraper.helper import (
-    AbstractContent,
+    AbstractScraper,
     TagDefinition,
     extract_link,
     extract_text,
@@ -27,13 +27,15 @@ class Teaser:
     extraction_timestamp: str | None = None
 
 
-class TeaserScraper(AbstractContent):
+class TeaserScraper(AbstractScraper):
     """
     A class for extracting information from news teaser elements.
     """
 
     RequiredHTMLContent = {
-        "tagDefinition": TagDefinition("div", {"class": "teaser-right twelve"}),
+        "tagDefinition": TagDefinition(
+            "div", {"class": "teaser-right twelve"}
+        ),
     }
 
     def __init__(self, soup: BeautifulSoup) -> None:
@@ -92,29 +94,27 @@ class TeaserScraper(AbstractContent):
         if isinstance(tag, Tag):
             return extract_text(tag)
 
-    def get_extraction_timestamp(
+    def extract(
         self, extraction_timestamp: datetime.datetime | None = None
-    ) -> str:
-        if extraction_timestamp:
-            return extraction_timestamp.replace(microsecond=0).isoformat()
-        else:
-            return datetime.datetime.utcnow().replace(microsecond=0).isoformat()
-
-    def extract(self, extraction_timestamp: datetime.datetime | None = None) -> Teaser:
+    ) -> Teaser:
         teaser = Teaser(
             date=self.extract_date(),
             topline=self.extract_topline(),
             headline=self.extract_headline(),
             shorttext=self.extract_shorttext(),
             article_link=self.extract_article_link(),
-            extraction_timestamp=self.get_extraction_timestamp(extraction_timestamp),
+            extraction_timestamp=self.get_extraction_timestamp(
+                extraction_timestamp
+            ),
         )
         return teaser
 
 
 def write_teaser_list(teaser_list: Sequence[dict]):
     datetime_str = (
-        datetime.datetime.utcnow().replace(microsecond=0).strftime("%Y%m%d%H%M")
+        datetime.datetime.utcnow()
+        .replace(microsecond=0)
+        .strftime("%Y%m%d%H%M")
     )
     output_dir = "data"
     file_name = f"teaser_{datetime_str}.csv"
@@ -135,4 +135,16 @@ def write_teaser_list(teaser_list: Sequence[dict]):
 
 
 def remove_extraction_timestamp(teaser: Teaser):
+    """
+    Remove the extraction timestamp from teaser
+
+    Parameters
+    ----------
+    teaser : Teaser
+
+    Returns
+    -------
+    Teaser
+        Teaser with removed extraction timestamp
+    """
     return setattr(teaser, "extraction_timestamp", None)

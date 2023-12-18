@@ -1,22 +1,37 @@
 from __future__ import annotations
 
+import datetime
+from dataclasses import dataclass
 from typing import Union
 from urllib.parse import urljoin
 
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from requests import Response
 
 from tagesschauscraper.constants import DEFAULT_TIMEOUT, TAGESSCHAU_URL
 from tagesschauscraper.helper import (
-    AbstractContent,
+    AbstractScraper,
     TagDefinition,
-    clean_string,
+    extract_text,
     is_tag_in_soup,
 )
 
 
-class Article(AbstractContent):
+@dataclass(frozen=False)
+class Article:
+    topline: str
+    headline: str
+    metatextline: str
+    tags: list[str]
+    subheads: list[str]
+    abstract: str
+    paragraphs: list[str]
+    article_link: str
+    extraction_timestamp: str
+
+
+class ArticleScraper(AbstractScraper):
     """
     A class for extracting information from news article HTML elements.
     """
@@ -56,37 +71,44 @@ class Article(AbstractContent):
             self.soup, self.RequiredHTMLContent["tagDefinition"]
         )
 
-    def extract(self) -> dict:
-        return {"tags": self.extract_tags()}
+    def extract(
+        self, extraction_timestamp: Union[datetime.datetime, None] = None
+    ) -> Article:
+        return Article(
+            topline=self.extract_topline(),
+            headline=self.extract_headline(),
+            metatextline=self.extract_metatextline(),
+            tags=self.extract_tags(),
+            subheads=self.extract_subheads(),
+            abstract=self.extract_abstract(),
+            paragraphs=self.extract_paragraphs(),
+            article_link="",
+            extraction_timestamp=self.get_extraction_timestamp(
+                extraction_timestamp
+            ),
+        )
 
     def extract_topline(self):
         tag = self.soup.find(attrs={"class": "seitenkopf__topline"})
-        try:
-            text = tag.get_text()
-        except AttributeError:
-            text = None
-        return text
+        if isinstance(tag, Tag):
+            return extract_text(tag)
 
     def extract_headline(self):
         tag = self.soup.find(attrs={"class": "seitenkopf__headline--text"})
-        try:
-            text = tag.get_text()
-        except AttributeError:
-            text = None
-        return text
+        if isinstance(tag, Tag):
+            return extract_text(tag)
 
     def extract_metatextline(self):
         tag = self.soup.find(attrs={"class": "metatextline"})
-        try:
-            text = tag.get_text()
-        except AttributeError:
-            text = None
-        return text
+        if isinstance(tag, Tag):
+            return extract_text(tag)
 
     def extract_tags(self):
         tag = self.soup.find(attrs={"class": "taglist"})
         article_tags = tag.find_all("li", {"class": "taglist__element"})
-        return [article_tag.get_text() for article_tag in article_tags]
+        return [
+            extract_text(tag) for tag in article_tags if isinstance(tag, Tag)
+        ]
 
     def extract_subheads(self):
         tags = self.soup.find_all(
@@ -97,7 +119,7 @@ class Article(AbstractContent):
                 )
             }
         )
-        return [tag.get_text() for tag in tags]
+        return [extract_text(tag) for tag in tags if isinstance(tag, Tag)]
 
     def extract_abstract(self):
         tag = self.soup.find(
@@ -108,11 +130,8 @@ class Article(AbstractContent):
                 )
             }
         )
-        try:
-            text = tag.get_text()
-        except AttributeError:
-            text = None
-        return text
+        if isinstance(tag, Tag):
+            return extract_text(tag)
 
     def extract_paragraphs(self):
         tags = self.soup.find_all(
@@ -123,7 +142,7 @@ class Article(AbstractContent):
                 )
             }
         )
-        return [tag.get_text() for tag in tags]
+        return [extract_text(tag) for tag in tags if isinstance(tag, Tag)]
 
 
 def get_article_response(link: str) -> Union[Response, None]:

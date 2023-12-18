@@ -1,7 +1,7 @@
+import datetime
 import os
 import shutil
 import unittest
-from datetime import date, datetime
 
 import pytest
 from bs4 import BeautifulSoup
@@ -11,7 +11,7 @@ from tagesschauscraper import archive, helper
 
 class TestDateDirectoryTreeCreator(unittest.TestCase):
     def setUp(self) -> None:
-        date_ = date(2022, 1, 12)
+        date_ = datetime.date(2022, 1, 12)
         root_dir = "tests/tmp"
         self.date_ = date_
         self.root_dir = root_dir
@@ -37,13 +37,15 @@ class TestDateDirectoryTreeCreator(unittest.TestCase):
         self.assertTrue(self.true_file_path)
 
     def test_make_dir_tree_from_file_path(self) -> None:
-        self.dateDirectoryTreeCreator.make_dir_tree_from_file_path(self.true_file_path)
+        self.dateDirectoryTreeCreator.make_dir_tree_from_file_path(
+            self.true_file_path
+        )
         self.assertTrue(self.true_file_path)
 
 
 class TestCreateFileNameFromDate(unittest.TestCase):
     def test_create_file_name_from_date(self) -> None:
-        date_ = date(2022, 1, 12)
+        date_ = datetime.date(2022, 1, 12)
         true_file_name = "prefix_2022-01-12_suffix.json"
         self.assertEqual(
             true_file_name,
@@ -53,7 +55,7 @@ class TestCreateFileNameFromDate(unittest.TestCase):
         )
 
     def test_create_file_name_from_datetime(self) -> None:
-        datetime_ = datetime(2022, 1, 12, 11, 12, 30)
+        datetime_ = datetime.datetime(2022, 1, 12, 11, 12, 30)
         true_file_name = "prefix_2022-01-12T11:12:30_suffix.json"
         self.assertEqual(
             true_file_name,
@@ -77,33 +79,39 @@ class TestNormalizeDatetime(unittest.TestCase):
 class TestDateRange(unittest.TestCase):
     def test_get_date_range(self) -> None:
         expected_result = [
-            date(2022, 1, 1),
-            date(2022, 1, 2),
-            date(2022, 1, 3),
-            date(2022, 1, 4),
+            datetime.date(2022, 1, 1),
+            datetime.date(2022, 1, 2),
+            datetime.date(2022, 1, 3),
+            datetime.date(2022, 1, 4),
         ]
         self.assertListEqual(
-            helper.get_date_range(date(2022, 1, 1), date(2022, 1, 5)),
+            helper.get_date_range(
+                datetime.date(2022, 1, 1), datetime.date(2022, 1, 5)
+            ),
             expected_result,
         )
 
 
 def test_creation_of_valid_request_params():
     expected_params = {"datum": "2023-02-04", "filter": "wirtschaft"}
-    archiveFilter = archive.ArchiveFilter(date(2023, 2, 4), "wirtschaft")
+    archiveFilter = archive.ArchiveFilter(
+        datetime.date(2023, 2, 4), "wirtschaft"
+    )
     request_params = archive.create_request_params(archiveFilter)
     assert request_params == expected_params
 
 
 def test_creation_of_valid_request_params_category_is_none():
     expected_params = {"datum": "2023-02-04", "filter": None}
-    archiveFilter = archive.ArchiveFilter(date(2023, 2, 4), None)
+    archiveFilter = archive.ArchiveFilter(datetime.date(2023, 2, 4), None)
     request_params = archive.create_request_params(archiveFilter)
     assert request_params == expected_params
 
 
 def test_creation_of_invalid_request_params():
-    archiveFilter = archive.ArchiveFilter(date(2023, 2, 4), "invalidCategory")
+    archiveFilter = archive.ArchiveFilter(
+        datetime.date(2023, 2, 4), "invalidCategory"
+    )
     with pytest.raises(Exception):
         archive.create_request_params(archiveFilter)
 

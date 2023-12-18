@@ -1,8 +1,8 @@
 import abc
+import datetime
 import hashlib
 import os
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
 from typing import Dict, Union
 
 from bs4 import BeautifulSoup, Tag
@@ -48,7 +48,7 @@ class DateDirectoryTreeCreator:
 
     def __init__(
         self,
-        date_: date,
+        date_: datetime.date,
         date_pattern: str = "%Y/%m",
         root_dir: str = ".",
     ) -> None:
@@ -94,7 +94,9 @@ class DateDirectoryTreeCreator:
             date_pattern = self.date_pattern
         if root_dir is None:
             root_dir = self.root_dir
-        self.file_path = os.path.join(root_dir, self.date_.strftime(date_pattern))
+        self.file_path = os.path.join(
+            root_dir, self.date_.strftime(date_pattern)
+        )
         return self.file_path
 
     def make_dir_tree_from_date(
@@ -124,7 +126,7 @@ class DateDirectoryTreeCreator:
 
 
 def create_file_name_from_date(
-    date_or_datetime: Union[date, datetime],
+    date_or_datetime: Union[datetime.date, datetime.datetime],
     date_pattern: Union[str, None] = None,
     prefix: str = "",
     suffix: str = "",
@@ -152,7 +154,7 @@ def create_file_name_from_date(
     The full file name.
     """
     if date_pattern is None:
-        if isinstance(date_or_datetime, datetime):
+        if isinstance(date_or_datetime, datetime.datetime):
             formatted_date = date_or_datetime.strftime("%Y-%m-%dT%H:%M:%S")
         else:
             formatted_date = date_or_datetime.strftime("%Y-%m-%d")
@@ -162,7 +164,9 @@ def create_file_name_from_date(
     return file_name
 
 
-def get_date_range(start_date: date, end_date: date) -> list[date]:
+def get_date_range(
+    start_date: datetime.date, end_date: datetime.date
+) -> list[datetime.date]:
     """
     Return a date range from start date (inclusive) to end date (exclusive)
     with an interval of 1 day.
@@ -186,7 +190,10 @@ def get_date_range(start_date: date, end_date: date) -> list[date]:
     """
     if end_date > start_date:
         days_between = (end_date - start_date).days
-        return [start_date + timedelta(days=days) for days in range(days_between)]
+        return [
+            start_date + datetime.timedelta(days=days)
+            for days in range(days_between)
+        ]
     else:
         raise ValueError("end_date must be after start_date.")
 
@@ -207,14 +214,26 @@ class NotValidHTML(Exception):
     pass
 
 
-class AbstractContent(abc.ABC):
+class AbstractScraper(abc.ABC):
     @abc.abstractmethod
     def validate(self):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def extract(self):
+    def extract(
+        self, extraction_timestamp: Union[datetime.datetime, None] = None
+    ):
         raise NotImplementedError
+
+    def get_extraction_timestamp(
+        self, extraction_timestamp: Union[datetime.datetime, None] = None
+    ) -> str:
+        if extraction_timestamp:
+            return extraction_timestamp.replace(microsecond=0).isoformat()
+        else:
+            return (
+                datetime.datetime.utcnow().replace(microsecond=0).isoformat()
+            )
 
 
 def is_tag_in_soup(soup: BeautifulSoup, tag_definition: TagDefinition) -> bool:

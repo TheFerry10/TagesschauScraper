@@ -1,8 +1,9 @@
-from tagesschauscraper import archive
-from bs4 import BeautifulSoup
-import pytest
 from pathlib import Path
 
+import pytest
+from bs4 import BeautifulSoup
+
+from tagesschauscraper import archive
 
 # 1. version
 #     Write the test data explicitly in the tests
@@ -17,66 +18,6 @@ from pathlib import Path
 
 
 ARCHIVE_TEST_DATA_DIR = Path("tests/data/archive/")
-
-
-@pytest.fixture
-def archive_valid_header():
-    file_name = "valid_header.html"
-    with open(
-        ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
-        content = f.read()
-    return content
-
-
-@pytest.fixture
-def archive_invalid_header():
-    file_name = "invalid_header.html"
-    with open(
-        ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
-        content = f.read()
-    return content
-
-
-@pytest.fixture
-def archive_date():
-    file_name = "date.html"
-    with open(
-        ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
-        content = f.read()
-    return content
-
-
-@pytest.fixture
-def archive_news_categories():
-    file_name = "news_categories.html"
-    with open(
-        ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
-        content = f.read()
-    return content
-
-
-@pytest.fixture
-def archive_teaser_container():
-    file_name = "teaser_container.html"
-    with open(
-        ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
-        content = f.read()
-    return content
-
-
-@pytest.fixture(name="archive_html")
-def archive_html_(request):
-    file_name = request.param
-    with open(
-        ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
-        content = f.read()
-    return content
 
 
 @pytest.mark.parametrize(
@@ -162,4 +103,5 @@ def test_if_available_category_is_recognized():
 
 
 def test_if_not_available_category_leads_to_false():
+    assert not archive.is_selected_in_categories("test category")
     assert not archive.is_selected_in_categories("test category")
