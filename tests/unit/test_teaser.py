@@ -3,17 +3,15 @@ import datetime
 import pytest
 from bs4 import BeautifulSoup
 
-from tagesschauscraper import teaser
-from tagesschauscraper.constants import TEASER_TEST_DATA_DIR
-from tagesschauscraper.teaser import Teaser
+from tagesschauscraper.domain import teaser
+from tagesschauscraper.domain.constants import TEASER_TEST_DATA_DIR
+from tagesschauscraper.domain.teaser import Teaser
 
 
 @pytest.fixture(name="teaser_html")
 def teaser_html_(request):
     file_name = request.param
-    with open(
-        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
+    with open(TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
         content = f.read()
     return content
 
@@ -21,9 +19,7 @@ def teaser_html_(request):
 @pytest.fixture(name="valid_teaser")
 def valid_teaser_():
     file_name = "valid-teaser.html"
-    with open(
-        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
+    with open(TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
         content = f.read()
     soup = BeautifulSoup(content, "html.parser")
     return teaser.TeaserScraper(soup)
@@ -48,7 +44,7 @@ def test_teaser_with_input(teaser_html, is_valid):
     [
         pytest.param(
             "valid-teaser.html",
-            "/ausland/test/tag1-tag2-108.html",
+            "/dummy/article.html",
             id="valid",
         ),
         pytest.param("invalid-teaser.html", None, id="invalid"),
@@ -87,21 +83,13 @@ def test_extract_date(valid_teaser):
 
 
 def test_extract(valid_teaser):
-    expected_date = "08.10.2023 • 13:17 Uhr"
-    expected_shorttext = "Test short text"
-    expected_headline = "Test headline"
-    expected_topline = "Test topline"
-    expected_article_link = "/ausland/test/tag1-tag2-108.html"
-    expected_extraction_date = "2023-01-01T00:00:00"
     expectedTeaser = Teaser(
-        date=expected_date,
-        shorttext=expected_shorttext,
-        headline=expected_headline,
-        topline=expected_topline,
-        article_link=expected_article_link,
-        extraction_timestamp=expected_extraction_date,
+        date="08.10.2023 • 13:17 Uhr",
+        shorttext="Test short text",
+        headline="Test headline",
+        topline="Test topline",
+        article_link="/dummy/article.html",
+        extraction_timestamp="2023-01-01T00:00:00",
     )
-    teaser_ = valid_teaser.extract(
-        extraction_timestamp=datetime.datetime(2023, 1, 1)
-    )
+    teaser_ = valid_teaser.extract(extraction_timestamp=datetime.datetime(2023, 1, 1))
     assert teaser_ == expectedTeaser

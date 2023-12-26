@@ -5,8 +5,7 @@ import unittest
 
 import pytest
 from bs4 import BeautifulSoup
-
-from tagesschauscraper import archive, helper
+from tagesschauscraper.domain import archive, helper
 
 
 class TestDateDirectoryTreeCreator(unittest.TestCase):
@@ -37,9 +36,7 @@ class TestDateDirectoryTreeCreator(unittest.TestCase):
         self.assertTrue(self.true_file_path)
 
     def test_make_dir_tree_from_file_path(self) -> None:
-        self.dateDirectoryTreeCreator.make_dir_tree_from_file_path(
-            self.true_file_path
-        )
+        self.dateDirectoryTreeCreator.make_dir_tree_from_file_path(self.true_file_path)
         self.assertTrue(self.true_file_path)
 
 
@@ -85,18 +82,14 @@ class TestDateRange(unittest.TestCase):
             datetime.date(2022, 1, 4),
         ]
         self.assertListEqual(
-            helper.get_date_range(
-                datetime.date(2022, 1, 1), datetime.date(2022, 1, 5)
-            ),
+            helper.get_date_range(datetime.date(2022, 1, 1), datetime.date(2022, 1, 5)),
             expected_result,
         )
 
 
 def test_creation_of_valid_request_params():
     expected_params = {"datum": "2023-02-04", "filter": "wirtschaft"}
-    archiveFilter = archive.ArchiveFilter(
-        datetime.date(2023, 2, 4), "wirtschaft"
-    )
+    archiveFilter = archive.ArchiveFilter(datetime.date(2023, 2, 4), "wirtschaft")
     request_params = archive.create_request_params(archiveFilter)
     assert request_params == expected_params
 
@@ -109,9 +102,7 @@ def test_creation_of_valid_request_params_category_is_none():
 
 
 def test_creation_of_invalid_request_params():
-    archiveFilter = archive.ArchiveFilter(
-        datetime.date(2023, 2, 4), "invalidCategory"
-    )
+    archiveFilter = archive.ArchiveFilter(datetime.date(2023, 2, 4), "invalidCategory")
     with pytest.raises(Exception):
         archive.create_request_params(archiveFilter)
 

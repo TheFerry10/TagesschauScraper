@@ -2,8 +2,7 @@ from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
-
-from tagesschauscraper import archive
+from tagesschauscraper.domain import archive
 
 # 1. version
 #     Write the test data explicitly in the tests
@@ -20,9 +19,7 @@ from tagesschauscraper import archive
 ARCHIVE_TEST_DATA_DIR = Path("tests/data/archive/")
 
 
-@pytest.mark.parametrize(
-    "archive_html", ["teaser_container.html"], indirect=True
-)
+@pytest.mark.parametrize("archive_html", ["teaser_container.html"], indirect=True)
 def test_extract_teaser_list(archive_html):
     soup = BeautifulSoup(archive_html, "html.parser")
     archive_ = archive.Archive(soup)
@@ -61,9 +58,7 @@ def test_extract_date(archive_html):
     assert archive_.extract_date() == expected_date
 
 
-@pytest.mark.parametrize(
-    "archive_html", ["news_categories.html"], indirect=True
-)
+@pytest.mark.parametrize("archive_html", ["news_categories.html"], indirect=True)
 def test_extract_news_categories(archive_html):
     soup = BeautifulSoup(archive_html, "html.parser")
     archive_ = archive.Archive(soup)
@@ -82,18 +77,14 @@ def test_extract_news_categories(archive_html):
 @pytest.mark.parametrize("archive_html", ["valid_header.html"], indirect=True)
 def test_is_tag_in_soup(archive_html):
     soup = BeautifulSoup(archive_html, "html.parser")
-    tag_definition = archive.TagDefinition(
-        "div", {"class": "trenner__text__topline"}
-    )
+    tag_definition = archive.TagDefinition("div", {"class": "trenner__text__topline"})
     assert archive.is_tag_in_soup(soup, tag_definition)
 
 
 @pytest.mark.parametrize("archive_html", ["valid_header.html"], indirect=True)
 def test_is_text_in_tag(archive_html):
     soup = BeautifulSoup(archive_html, "html.parser")
-    tag_definition = archive.TagDefinition(
-        "div", {"class": "trenner__text__topline"}
-    )
+    tag_definition = archive.TagDefinition("div", {"class": "trenner__text__topline"})
     example_text = "Archiv"
     assert archive.is_text_in_tag(soup, tag_definition, example_text)
 

@@ -1,20 +1,11 @@
 FROM python:3.9-slim-buster
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        python-dev \
-        gcc \
-        musl-dev \
-        make \
-        git \
-        openssh-client \
-        mypy \
-        pandoc \
-    && rm -rf /var/lib/apt/lists/*
+COPY requirements.txt /tmp/
+RUN pip install -r /tmp/requirements.txt
 
-# Install dependencies:
-COPY requirements.txt .
+RUN mkdir -p /src
+COPY src/ /src/
+RUN pip install -e /src
+COPY tests/ /tests/
 
-# Copy the application code into the container
-COPY . .
-CMD [ "/bin/bash" ]
+WORKDIR /src

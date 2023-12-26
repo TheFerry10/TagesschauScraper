@@ -1,8 +1,8 @@
 """
 ===============================
-Scraping news data for a date range
+Scraping news data
 ===============================
-Scraping news data for a specified date range and news category. The script
+Scraping news data for a specified date and news category. The script
 can be used as a command line tool. Arguments will be parser from the CLI.
 """
 
@@ -13,33 +13,23 @@ import os
 import time
 from datetime import datetime
 
-from tagesschauscraper import archive, helper
-from tagesschauscraper.constants import ARCHIVE_URL
+from tagesschauscraper.domain import archive, helper
+from tagesschauscraper.domain.constants import ARCHIVE_URL
 
 # Argument parsing
 parser = argparse.ArgumentParser(
-    prog="TagesschauScraperDateRange",
+    prog="TagesschauScraper",
     description=(
         "This script scrapes news data from Tagesschau.de. The scraped news"
-        " are filtered by date range and news category."
+        " are filtered by publishing date and news category."
     ),
 )
 parser.add_argument(
-    "start_date",
-    metavar="start",
+    "date",
+    metavar="d",
     type=str,
     help=(
-        "Start date for date range (inclusive). Accepted date format is"
-        " YYYY-MM-DD"
-    ),
-)
-parser.add_argument(
-    "end_date",
-    metavar="end",
-    type=str,
-    help=(
-        "End date for date range (exclusive). Accepted date format is"
-        " YYYY-MM-DD"
+        "Filter news article by publishing date." " Accepted date format is YYYY-MM-DD"
     ),
 )
 parser.add_argument(
@@ -78,21 +68,15 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
-start_time = time.time()
-input_date_pattern = "%Y-%m-%d"
-start_date = datetime.strptime(args.start_date, input_date_pattern).date()
-end_date = datetime.strptime(args.end_date, input_date_pattern).date()
-dates = helper.get_date_range(start_date=start_date, end_date=end_date)
 
-logging.info(
-    f"Initialize scraping for date range ({args.start_date}, {args.end_date})"
-    " and category {args.category}"
-)
-archiveFilters = [
-    archive.ArchiveFilter({"date": date_, "category": args.category})
-    for date_ in dates
-]
-config = archive.ScraperConfig(archiveFilters)
+start_time = time.time()
+
+input_date_pattern = "%Y-%m-%d"
+date_ = datetime.strptime(args.date, input_date_pattern).date()
+
+logging.info(f"Initialize scraping for date {args.date} and category {args.category}")
+archiveFilter = archive.ArchiveFilter({"date": date_, "category": args.category})
+config = archive.ScraperConfig(archiveFilter)
 tagesschauScraper = archive.TagesschauScraper()
 logging.info(
     f"Scraping news from URL {ARCHIVE_URL} with params {config.request_params}"
@@ -102,9 +86,15 @@ logging.info("Scraping terminated.")
 
 if not os.path.isdir(args.datadir):
     os.mkdir(args.datadir)
-
-file_name = "_".join([args.start_date, args.end_date, args.category]) + ".json"
-file_name_and_path = os.path.join(args.datadir, file_name)
+dateDirectoryTreeCreator = helper.DateDirectoryTreeCreator(date_, root_dir=args.datadir)
+file_path = dateDirectoryTreeCreator.create_file_path_from_date()
+dateDirectoryTreeCreator.make_dir_tree_from_file_path(file_path)
+file_name_and_path = os.path.join(
+    file_path,
+    helper.create_file_name_from_date(
+        date_, suffix="_" + args.category, extension=".json"
+    ),
+)
 logging.info(f"Save scraped news to file {file_name_and_path}")
 with open(file_name_and_path, "w") as fp:
     json.dump(records, fp, indent=4)

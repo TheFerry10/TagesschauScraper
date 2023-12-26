@@ -3,7 +3,20 @@ ENV_NAME=.env
 SHELL := /bin/bash
 DIRS = examples tagesschauscraper tests
 export PYTHONPATH=.
+export COMPOSE_DOCKER_CLI_BUILD=1
+export DOCKER_BUILDKIT=1
 
+.PHONY: build
+build:
+	docker-compose build
+
+.PHONY: up
+up:
+	docker-compose up -d app
+
+.PHONY: down
+down:
+	docker-compose down --remove-orphans
 
 .PHONY: clean
 clean:
@@ -29,11 +42,11 @@ integrationtest:
 .PHONY: test
 test: unittest integrationtest
 
-.PHONY: build
-build:
-	pandoc -f markdown -t rst -o README.rst README.md
-	$(ENV_NAME)/bin/python setup.py sdist bdist_wheel
-	rm README.rst
+# .PHONY: build
+# build:
+# 	pandoc -f markdown -t rst -o README.rst README.md
+# 	$(ENV_NAME)/bin/python setup.py sdist bdist_wheel
+# 	rm README.rst
 
 
 .PHONY: typehint

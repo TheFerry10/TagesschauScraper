@@ -2,15 +2,15 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass
-from typing import Union
+from typing import Optional, Union
 from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup, Tag
 from requests import Response
 
-from tagesschauscraper.constants import DEFAULT_TIMEOUT, TAGESSCHAU_URL
-from tagesschauscraper.helper import (
+from tagesschauscraper.domain.constants import DEFAULT_TIMEOUT, TAGESSCHAU_URL
+from tagesschauscraper.domain.helper import (
     AbstractScraper,
     TagDefinition,
     extract_text,
@@ -23,12 +23,16 @@ class Article:
     topline: str
     headline: str
     metatextline: str
-    tags: list[str]
-    subheads: list[str]
+    tags: str
+    subheads: str
     abstract: str
-    paragraphs: list[str]
+    paragraphs: str
     article_link: str
     extraction_timestamp: str
+
+
+class ArticleTagNotFound(Exception):
+    pass
 
 
 class ArticleScraper(AbstractScraper):
@@ -83,15 +87,15 @@ class ArticleScraper(AbstractScraper):
             abstract=self.extract_abstract(),
             paragraphs=self.extract_paragraphs(),
             article_link="",
-            extraction_timestamp=self.get_extraction_timestamp(
-                extraction_timestamp
-            ),
+            extraction_timestamp=self.get_extraction_timestamp(extraction_timestamp),
         )
 
     def extract_topline(self):
         tag = self.soup.find(attrs={"class": "seitenkopf__topline"})
         if isinstance(tag, Tag):
             return extract_text(tag)
+        else:
+            raise ArticleTagNotFound("Topline not found for class: seitenkopf__topline")
 
     def extract_headline(self):
         tag = self.soup.find(attrs={"class": "seitenkopf__headline--text"})
@@ -106,9 +110,9 @@ class ArticleScraper(AbstractScraper):
     def extract_tags(self):
         tag = self.soup.find(attrs={"class": "taglist"})
         article_tags = tag.find_all("li", {"class": "taglist__element"})
-        return [
-            extract_text(tag) for tag in article_tags if isinstance(tag, Tag)
-        ]
+        return "|".join(
+            [extract_text(tag) for tag in article_tags if isinstance(tag, Tag)]
+        )
 
     def extract_subheads(self):
         tags = self.soup.find_all(
@@ -119,7 +123,7 @@ class ArticleScraper(AbstractScraper):
                 )
             }
         )
-        return [extract_text(tag) for tag in tags if isinstance(tag, Tag)]
+        return "|".join([extract_text(tag) for tag in tags if isinstance(tag, Tag)])
 
     def extract_abstract(self):
         tag = self.soup.find(
@@ -142,7 +146,12 @@ class ArticleScraper(AbstractScraper):
                 )
             }
         )
-        return [extract_text(tag) for tag in tags if isinstance(tag, Tag)]
+        return "|".join([extract_text(tag) for tag in tags if isinstance(tag, Tag)])
+
+
+def get_article_html(link: str) -> BeautifulSoup:
+    response = get_article_response(link)
+    return BeautifulSoup(response.text, "html.parser")
 
 
 def get_article_response(link: str) -> Union[Response, None]:
