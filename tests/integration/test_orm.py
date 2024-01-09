@@ -5,9 +5,12 @@ from tagesschauscraper.domain.teaser import Teaser
 
 def test_teaser_mapper_can_load_teasers(session):
     query = (
-        "INSERT INTO teasers (date, shorttext, headline, topline, article_link, extraction_timestamp) VALUES "
-        '("08.10.2023 • 13:17 Uhr", "Test short text", "Test headline", "Test topline", "/dummy/article.html", "2023-01-01T00:00:00"),'
-        '("08.10.2023 • 15:17 Uhr", "Test short text 2", "Test headline 2", "Test topline 2", "/dummy/article_2.html", "2023-01-02T00:00:00")'
+        "INSERT INTO teasers (date, shorttext, headline, topline,"
+        ' article_link, extraction_timestamp) VALUES ("08.10.2023 • 13:17'
+        ' Uhr", "Test short text", "Test headline", "Test topline",'
+        ' "/dummy/article.html", "2023-01-01T00:00:00"),("08.10.2023 • 15:17'
+        ' Uhr", "Test short text 2", "Test headline 2", "Test topline 2",'
+        ' "/dummy/article_2.html", "2023-01-02T00:00:00")'
     )
     session.execute(text(query))
 
@@ -43,7 +46,10 @@ def test_teaser_mapper_can_save_teasers(session):
     )
     session.add(new_teaser)
     session.commit()
-    query = 'SELECT date, shorttext, headline, topline, article_link, extraction_timestamp FROM "teasers"'
+    query = (
+        "SELECT date, shorttext, headline, topline, article_link,"
+        ' extraction_timestamp FROM "teasers"'
+    )
     rows = list(session.execute((text(query))))
     assert rows == [
         (
@@ -59,9 +65,15 @@ def test_teaser_mapper_can_save_teasers(session):
 
 def test_retrieving_articles(session):
     query = (
-        "INSERT INTO articles (abstract, topline, headline, metatextline, paragraphs, subheads, tags, article_link, extraction_timestamp) VALUES "
-        '("Test abstract", "Test topline", "Test headline", "Stand: 07.10.2023 17:43 Uhr", "Paragraph 1", "Subhead 1|Subhead 2", "tag1|tag2|tag3", "/dummy/article.html", "2023-01-01T00:00:00"),'
-        '("Test abstract 2", "Test topline 2", "Test headline 2", "Stand: 07.11.2023 17:43 Uhr", "Paragraph 2", "Subhead 1|Subhead 3", "tag1|tag2|tag4", "/dummy/article_2.html", "2023-01-02T00:00:00")'
+        "INSERT INTO articles (abstract, topline, headline, metatextline,"
+        " paragraphs, subheads, tags, article_link, extraction_timestamp)"
+        ' VALUES ("Test abstract", "Test topline", "Test headline", "Stand:'
+        ' 07.10.2023 17:43 Uhr", "Paragraph 1", "Subhead 1|Subhead 2",'
+        ' "tag1|tag2|tag3", "/dummy/article.html",'
+        ' "2023-01-01T00:00:00"),("Test abstract 2", "Test topline 2", "Test'
+        ' headline 2", "Stand: 07.11.2023 17:43 Uhr", "Paragraph 2", "Subhead'
+        ' 1|Subhead 3", "tag1|tag2|tag4", "/dummy/article_2.html",'
+        ' "2023-01-02T00:00:00")'
     )
     session.execute(text(query))
     expected = [
@@ -105,7 +117,10 @@ def test_saving_articles(session):
     )
     session.add(new_article)
     session.commit()
-    query = "SELECT abstract, topline, headline, metatextline, paragraphs, subheads, tags, article_link, extraction_timestamp FROM 'articles'"
+    query = (
+        "SELECT abstract, topline, headline, metatextline, paragraphs,"
+        " subheads, tags, article_link, extraction_timestamp FROM 'articles'"
+    )
     rows = list(session.execute(text(query)))
     assert rows == [
         (

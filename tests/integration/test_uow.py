@@ -1,45 +1,62 @@
 import pytest
-from allocation.domain import model
-from allocation.service_layer import unit_of_work
 from sqlalchemy.sql import text
 
+from tagesschauscraper.service_layer import unit_of_work
 
-def insert_teaser(session, ref, sku, qty, eta):
+
+def insert_teaser(
+    session,
+    date,
+    shorttext,
+    headline,
+    topline,
+    article_link,
+    extraction_timestamp,
+):
     session.execute(
         text(
-            "INSERT INTO batches (reference, sku, _purchased_quantity, eta) VALUES (:ref, :sku, :qty, :eta)"
+            "INSERT INTO teasers (date, shorttext, headline, topline,"
+            " article_link, extraction_timestamp) VALUES (:date, :shorttext,"
+            " :headline, :topline, :article_link, :extraction_timestamp)"
         ),
-        dict(ref=ref, sku=sku, qty=qty, eta=eta),
+        dict(
+            date=date,
+            shorttext=shorttext,
+            headline=headline,
+            topline=topline,
+            article_link=article_link,
+            extraction_timestamp=extraction_timestamp,
+        ),
     )
 
 
-def get_allocated_batch_ref(session, orderid, sku):
-    [[orderlineid]] = session.execute(
-        text("SELECT id FROM order_lines WHERE orderid=:orderid AND sku=:sku"),
-        dict(orderid=orderid, sku=sku),
-    )
+def get_teaser_article_link(session, article_link):
     [[batchref]] = session.execute(
         text(
-            "SELECT b.reference FROM allocations JOIN batches AS b ON batch_id = b.id WHERE orderline_id=:orderlineid"
+            "SELECT article_link FROM teasers WHERE article_link=:article_link"
         ),
-        dict(orderlineid=orderlineid),
+        dict(article_link=article_link),
     )
     return batchref
 
 
-def test_uow_can_retrieve_a_batch_and_allocate_to_it(session_factory):
-    # insert teaser in DB
+def test_uow_can_retrieve_a_teaser(session_factory):
     session = session_factory()
-    insert_teaser(session, "batch1", "HIPSTER-WORKBENCH", 100, None)
+    insert_teaser(
+        session,
+        "08.10.2023 • 13:17 Uhr",
+        "Test short text",
+        "Test headline",
+        "Test topline",
+        "/dummy/article.html",
+        "2023-01-01T00:00:00",
+    )
     session.commit()
-
-    # encapsulate DB operations
-    uow = unit_of_work.SqlAlchemyUnitOfWork(session_factory)
+    article_link = "/dummy/article.html"
+    uow = unit_of_work.SqlAlchemyTeaserUnitOfWork(session_factory)
     with uow:
-        batch = uow.batches.get(reference="batch1")
-        line = model.OrderLine("o1", "HIPSTER-WORKBENCH", 10)
-        batch.allocate(line)
+        teaser = uow.teasers.get(article_link=article_link)
         uow.commit()
 
-    batchref = get_allocated_batch_ref(session, "o1", "HIPSTER-WORKBENCH")
-    assert batchref == "batch1"
+    article_link_ = get_teaser_article_link(session, article_link)
+    assert article_link_ == article_link

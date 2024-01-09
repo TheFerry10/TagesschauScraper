@@ -87,7 +87,9 @@ class ArticleScraper(AbstractScraper):
             abstract=self.extract_abstract(),
             paragraphs=self.extract_paragraphs(),
             article_link="",
-            extraction_timestamp=self.get_extraction_timestamp(extraction_timestamp),
+            extraction_timestamp=self.get_extraction_timestamp(
+                extraction_timestamp
+            ),
         )
 
     def extract_topline(self):
@@ -95,7 +97,9 @@ class ArticleScraper(AbstractScraper):
         if isinstance(tag, Tag):
             return extract_text(tag)
         else:
-            raise ArticleTagNotFound("Topline not found for class: seitenkopf__topline")
+            raise ArticleTagNotFound(
+                "Topline not found for class: seitenkopf__topline"
+            )
 
     def extract_headline(self):
         tag = self.soup.find(attrs={"class": "seitenkopf__headline--text"})
@@ -123,7 +127,9 @@ class ArticleScraper(AbstractScraper):
                 )
             }
         )
-        return "|".join([extract_text(tag) for tag in tags if isinstance(tag, Tag)])
+        return "|".join(
+            [extract_text(tag) for tag in tags if isinstance(tag, Tag)]
+        )
 
     def extract_abstract(self):
         tag = self.soup.find(
@@ -146,7 +152,9 @@ class ArticleScraper(AbstractScraper):
                 )
             }
         )
-        return "|".join([extract_text(tag) for tag in tags if isinstance(tag, Tag)])
+        return "|".join(
+            [extract_text(tag) for tag in tags if isinstance(tag, Tag)]
+        )
 
 
 def get_article_html(link: str) -> BeautifulSoup:

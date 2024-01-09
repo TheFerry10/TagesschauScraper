@@ -1,8 +1,16 @@
 import datetime
 from typing import List, Optional
 
-from tagesschauscraper.domain.archive import Archive, ArchiveFilter, get_archive_html
-from tagesschauscraper.domain.article import Article, ArticleScraper, get_article_html
+from tagesschauscraper.domain.archive import (
+    Archive,
+    ArchiveFilter,
+    get_archive_html,
+)
+from tagesschauscraper.domain.article import (
+    Article,
+    ArticleScraper,
+    get_article_html,
+)
 from tagesschauscraper.domain.teaser import Teaser, TeaserScraper
 
 

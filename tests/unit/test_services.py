@@ -5,12 +5,15 @@ from unittest.mock import patch
 from tagesschauscraper.domain.archive import ArchiveFilter
 from tagesschauscraper.domain.article import Article
 from tagesschauscraper.domain.teaser import Teaser
-from tagesschauscraper.service_layer.service import scrape_article, scrape_teaser
+from tagesschauscraper.service_layer.service import (
+    scrape_article,
+    scrape_teaser,
+)
 
 ARCHIVE_TEST_DATA_DIR = Path("tests/data/archive/")
 
 
-@patch("tagesschauscraper.archive.requests.get")
+@patch("tagesschauscraper.domain.archive.requests.get")
 def test_scrape_all_teaser_for_date(mock_get, archive_with_teaser_list_html):
     mock_get.return_value.ok = True
     mock_get.return_value.text = archive_with_teaser_list_html
@@ -34,7 +37,7 @@ def test_scrape_all_teaser_for_date(mock_get, archive_with_teaser_list_html):
     assert expected_teaser_list == teaser_list
 
 
-@patch("tagesschauscraper.article.requests.get")
+@patch("tagesschauscraper.domain.article.requests.get")
 def test_scrape_articles_from_teaser(mock_get, expected_article_html):
     mock_get.return_value.ok = True
     mock_get.return_value.text = expected_article_html

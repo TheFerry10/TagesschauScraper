@@ -30,7 +30,9 @@ class ArchiveFilter:
     news_category: str | None
 
 
-def transform_date(date_: date, date_pattern: str = DEFAULT_DATE_PATTERN) -> str:
+def transform_date(
+    date_: date, date_pattern: str = DEFAULT_DATE_PATTERN
+) -> str:
     return date_.strftime(date_pattern)
 
 
@@ -61,7 +63,9 @@ class Archive(AbstractScraper):
     """
 
     RequiredHTMLContent = {
-        "tagDefinition": TagDefinition("div", {"class": "trenner__text__topline"}),
+        "tagDefinition": TagDefinition(
+            "div", {"class": "trenner__text__topline"}
+        ),
         "text": "Archiv",
     }
 
@@ -104,11 +108,15 @@ class Archive(AbstractScraper):
         pass
 
     def extract_teaser_list(self):
-        teaser_container = self.soup.find_all("div", {"class": "teaser-right twelve"})
+        teaser_container = self.soup.find_all(
+            "div", {"class": "teaser-right twelve"}
+        )
         return teaser_container
 
     def extract_news_categories(self) -> set:
-        category_container = self.soup.find("ul", {"class": "tabnav__list swipe"})
+        category_container = self.soup.find(
+            "ul", {"class": "tabnav__list swipe"}
+        )
         categories: set[str] = set()
         if isinstance(category_container, Tag):
             categories = {
@@ -153,7 +161,9 @@ def get_archive_response(request_params: dict) -> Union[Response, None]:
     str
         HTML of archive
     """
-    response = requests.get(ARCHIVE_URL, params=request_params, timeout=DEFAULT_TIMEOUT)
+    response = requests.get(
+        ARCHIVE_URL, params=request_params, timeout=DEFAULT_TIMEOUT
+    )
     if response.ok:
         return response
     else:

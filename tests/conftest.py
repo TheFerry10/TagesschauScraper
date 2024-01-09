@@ -1,12 +1,16 @@
 import datetime
-
+import os
+import shutil
 import pytest
 from bs4 import BeautifulSoup
 from sqlalchemy import create_engine
 from sqlalchemy.orm import clear_mappers, sessionmaker
 
 from tagesschauscraper.adapters.orm import metadata, start_mappers
-from tagesschauscraper.domain.archive import ArchiveFilter, create_request_params
+from tagesschauscraper.domain.archive import (
+    ArchiveFilter,
+    create_request_params,
+)
 from tagesschauscraper.domain.article import ArticleScraper
 from tagesschauscraper.domain.constants import (
     ARCHIVE_TEST_DATA_DIR,
@@ -14,6 +18,7 @@ from tagesschauscraper.domain.constants import (
     TEASER_TEST_DATA_DIR,
 )
 from tagesschauscraper.domain.teaser import TeaserScraper
+from tagesschauscraper.domain import helper
 
 
 @pytest.fixture
@@ -47,7 +52,9 @@ def sqlite_session():
 @pytest.fixture
 def archive_valid_header():
     file_name = "valid_header.html"
-    with open(ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     return content
 
@@ -55,7 +62,9 @@ def archive_valid_header():
 @pytest.fixture
 def archive_invalid_header():
     file_name = "invalid_header.html"
-    with open(ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     return content
 
@@ -63,7 +72,9 @@ def archive_invalid_header():
 @pytest.fixture
 def archive_news_categories():
     file_name = "news_categories.html"
-    with open(ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     return content
 
@@ -71,7 +82,9 @@ def archive_news_categories():
 @pytest.fixture
 def archive_date():
     file_name = "date.html"
-    with open(ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     return content
 
@@ -79,7 +92,9 @@ def archive_date():
 @pytest.fixture
 def archive_teaser_container():
     file_name = "teaser_container.html"
-    with open(ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     return content
 
@@ -87,7 +102,9 @@ def archive_teaser_container():
 @pytest.fixture(name="archive_html")
 def archive_html_(request):
     file_name = request.param
-    with open(ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     return content
 
@@ -95,7 +112,9 @@ def archive_html_(request):
 @pytest.fixture(name="article_html")
 def teaser_html_(request):
     file_name = request.param
-    with open(ARTICLE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        ARTICLE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     return content
 
@@ -103,7 +122,9 @@ def teaser_html_(request):
 @pytest.fixture(name="valid_article")
 def valid_article_():
     file_name = "valid-article.html"
-    with open(ARTICLE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        ARTICLE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     soup = BeautifulSoup(content, "html.parser")
     return ArticleScraper(soup)
@@ -112,7 +133,9 @@ def valid_article_():
 @pytest.fixture(name="invalid_article")
 def invalid_article_():
     file_name = "invalid-article.html"
-    with open(ARTICLE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        ARTICLE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     soup = BeautifulSoup(content, "html.parser")
     return ArticleScraper(soup)
@@ -121,7 +144,9 @@ def invalid_article_():
 @pytest.fixture(name="valid_teaser")
 def valid_teaser_():
     file_name = "valid-teaser.html"
-    with open(TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     soup = BeautifulSoup(content, "html.parser")
     return TeaserScraper(soup)
@@ -130,7 +155,9 @@ def valid_teaser_():
 @pytest.fixture(name="archive_with_teaser_list_html")
 def article_teaser_html():
     file_name = "valid-teaser.html"
-    with open(TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     return content
 
@@ -138,7 +165,9 @@ def article_teaser_html():
 @pytest.fixture(name="expected_article_html")
 def article_html():
     file_name = "valid-article.html"
-    with open(ARTICLE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        ARTICLE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     return content
 
@@ -154,6 +183,8 @@ def request_params_():
 @pytest.fixture(name="expected_archive_html")
 def archive_html():
     file_name = "valid_header.html"
-    with open(ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+    with open(
+        ARCHIVE_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
+    ) as f:
         content = f.read()
     return content

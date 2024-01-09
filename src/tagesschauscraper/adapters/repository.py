@@ -35,7 +35,11 @@ class SqlAlchemyTeaserRepository(AbstractTeaserRepository):
         self.session.add(teaser)
 
     def get(self, article_link):
-        return self.session.query(Teaser).filter_by(reference=article_link).one()
+        return (
+            self.session.query(Teaser)
+            .filter_by(article_link=article_link)
+            .one()
+        )
 
     def list(self):
         return self.session.query(Teaser).all()
@@ -49,7 +53,11 @@ class SqlAlchemyArticleRepository(AbstractArticleRepository):
         self.session.add(article)
 
     def get(self, article_link):
-        return self.session.query(Article).filter_by(reference=article_link).one()
+        return (
+            self.session.query(Article)
+            .filter_by(article_link=article_link)
+            .one()
+        )
 
     def list(self):
         return self.session.query(Article).all()

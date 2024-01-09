@@ -33,7 +33,9 @@ class TeaserScraper(AbstractScraper):
     """
 
     RequiredHTMLContent = {
-        "tagDefinition": TagDefinition("div", {"class": "teaser-right twelve"}),
+        "tagDefinition": TagDefinition(
+            "div", {"class": "teaser-right twelve"}
+        ),
     }
 
     def __init__(self, soup: BeautifulSoup) -> None:
@@ -92,21 +94,27 @@ class TeaserScraper(AbstractScraper):
         if isinstance(tag, Tag):
             return extract_text(tag)
 
-    def extract(self, extraction_timestamp: datetime.datetime | None = None) -> Teaser:
+    def extract(
+        self, extraction_timestamp: datetime.datetime | None = None
+    ) -> Teaser:
         teaser = Teaser(
             date=self.extract_date(),
             topline=self.extract_topline(),
             headline=self.extract_headline(),
             shorttext=self.extract_shorttext(),
             article_link=self.extract_article_link(),
-            extraction_timestamp=self.get_extraction_timestamp(extraction_timestamp),
+            extraction_timestamp=self.get_extraction_timestamp(
+                extraction_timestamp
+            ),
         )
         return teaser
 
 
 def write_teaser_list(teaser_list: Sequence[dict]):
     datetime_str = (
-        datetime.datetime.utcnow().replace(microsecond=0).strftime("%Y%m%d%H%M")
+        datetime.datetime.utcnow()
+        .replace(microsecond=0)
+        .strftime("%Y%m%d%H%M")
     )
     output_dir = "data"
     file_name = f"teaser_{datetime_str}.csv"

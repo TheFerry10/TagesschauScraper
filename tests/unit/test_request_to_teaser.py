@@ -34,17 +34,19 @@ def test_integration_between_archive_and_teaser_extraction(
     assert extracted_teaser_list == expected_teaser_list
 
 
-@patch("tagesschauscraper.article.requests.get")
-def test_integration_between_teaser_list_and_article(mock_get, expected_article_html):
+@patch("tagesschauscraper.domain.article.requests.get")
+def test_integration_between_teaser_list_and_article(
+    mock_get, expected_article_html
+):
     expected_article_list = [
         Article(
             abstract="Test abstract",
             topline="Test topline",
             headline="Test headline",
             metatextline="Stand: 07.10.2023 17:43 Uhr",
-            paragraphs=["Paragraph 1"],
-            subheads=["Subhead 1", "Subhead 2"],
-            tags=["tag1", "tag2", "tag3"],
+            paragraphs="Paragraph 1",
+            subheads="Subhead 1|Subhead 2",
+            tags="tag1|tag2|tag3",
             article_link="/dummy/article.html",
             extraction_timestamp="2023-01-01T00:00:00",
         )
@@ -73,8 +75,10 @@ def test_integration_between_teaser_list_and_article(mock_get, expected_article_
         assert article_list == expected_article_list
 
 
-@patch("tagesschauscraper.archive.requests.get")
-def test_archive_html_from_url(mock_get, request_params, expected_archive_html):
+@patch("tagesschauscraper.domain.archive.requests.get")
+def test_archive_html_from_url(
+    mock_get, request_params, expected_archive_html
+):
     mock_get.return_value.ok = True
     mock_get.return_value.text = expected_archive_html
     response = get_archive_response(request_params)
@@ -82,7 +86,7 @@ def test_archive_html_from_url(mock_get, request_params, expected_archive_html):
     assert response.text == expected_archive_html
 
 
-@patch("tagesschauscraper.article.requests.get")
+@patch("tagesschauscraper.domain.article.requests.get")
 def test_article_html_from_url(mock_get, expected_article_html):
     link = "/article.html"
     mock_get.return_value.ok = True

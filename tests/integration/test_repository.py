@@ -19,7 +19,10 @@ def test_repository_can_save_a_teaser(session):
     repo = repository.SqlAlchemyTeaserRepository(session)
     repo.add(new_teaser)
     session.commit()
-    query = 'SELECT date, shorttext, headline, topline, article_link, extraction_timestamp FROM "teasers"'
+    query = (
+        "SELECT date, shorttext, headline, topline, article_link,"
+        ' extraction_timestamp FROM "teasers"'
+    )
     rows = list(session.execute((text(query))))
     assert rows == [
         (
@@ -48,7 +51,10 @@ def test_repository_can_save_an_article(session):
     repo = repository.SqlAlchemyArticleRepository(session)
     repo.add(new_article)
     session.commit()
-    query = "SELECT abstract, topline, headline, metatextline, paragraphs, subheads, tags, article_link, extraction_timestamp FROM 'articles'"
+    query = (
+        "SELECT abstract, topline, headline, metatextline, paragraphs,"
+        " subheads, tags, article_link, extraction_timestamp FROM 'articles'"
+    )
     rows = list(session.execute((text(query))))
     assert rows == [
         (
