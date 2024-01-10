@@ -1,5 +1,5 @@
 import datetime
-
+from unittest.mock import patch
 import pytest
 from bs4 import BeautifulSoup
 
@@ -86,7 +86,9 @@ def test_extract_date(valid_teaser):
     assert topline == expected_date
 
 
-def test_extract(valid_teaser):
+@patch("tagesschauscraper.domain.teaser.get_extraction_timestamp")
+def test_extract(mock_extraction_timestamp, valid_teaser):
+    mock_extraction_timestamp.return_value = "2023-01-01T00:00:00"
     expectedTeaser = Teaser(
         date="08.10.2023 • 13:17 Uhr",
         shorttext="Test short text",
@@ -95,7 +97,5 @@ def test_extract(valid_teaser):
         article_link="/dummy/article.html",
         extraction_timestamp="2023-01-01T00:00:00",
     )
-    teaser_ = valid_teaser.extract(
-        extraction_timestamp=datetime.datetime(2023, 1, 1)
-    )
+    teaser_ = valid_teaser.extract()
     assert teaser_ == expectedTeaser

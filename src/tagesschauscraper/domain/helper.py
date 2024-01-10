@@ -225,15 +225,9 @@ class AbstractScraper(abc.ABC):
     ):
         raise NotImplementedError
 
-    def get_extraction_timestamp(
-        self, extraction_timestamp: Union[datetime.datetime, None] = None
-    ) -> str:
-        if extraction_timestamp:
-            return extraction_timestamp.replace(microsecond=0).isoformat()
-        else:
-            return (
-                datetime.datetime.utcnow().replace(microsecond=0).isoformat()
-            )
+
+def get_extraction_timestamp() -> str:
+    return datetime.datetime.utcnow().replace(microsecond=0).isoformat()
 
 
 def is_tag_in_soup(soup: BeautifulSoup, tag_definition: TagDefinition) -> bool:

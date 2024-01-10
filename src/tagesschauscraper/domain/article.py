@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import List, Optional, Union
 from urllib.parse import urljoin
 
 import requests
@@ -15,7 +15,9 @@ from tagesschauscraper.domain.helper import (
     TagDefinition,
     extract_text,
     is_tag_in_soup,
+    get_extraction_timestamp,
 )
+from tagesschauscraper.domain.teaser import Teaser
 
 
 @dataclass(frozen=False)
@@ -75,9 +77,7 @@ class ArticleScraper(AbstractScraper):
             self.soup, self.RequiredHTMLContent["tagDefinition"]
         )
 
-    def extract(
-        self, extraction_timestamp: Union[datetime.datetime, None] = None
-    ) -> Article:
+    def extract(self) -> Article:
         return Article(
             topline=self.extract_topline(),
             headline=self.extract_headline(),
@@ -87,9 +87,7 @@ class ArticleScraper(AbstractScraper):
             abstract=self.extract_abstract(),
             paragraphs=self.extract_paragraphs(),
             article_link="",
-            extraction_timestamp=self.get_extraction_timestamp(
-                extraction_timestamp
-            ),
+            extraction_timestamp=get_extraction_timestamp(),
         )
 
     def extract_topline(self):
@@ -182,3 +180,13 @@ def get_article_response(link: str) -> Union[Response, None]:
         return response
     else:
         return None
+
+
+def scrape_article(teaser_list: List[Teaser]) -> List[Article]:
+    article_list: List[Article] = []
+    for t in teaser_list:
+        raw_article = get_article_html(t.article_link)
+        article = ArticleScraper(raw_article).extract()
+        article.article_link = t.article_link
+        article_list.append(article)
+    return article_list

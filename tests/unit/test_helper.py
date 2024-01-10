@@ -1,6 +1,5 @@
 import datetime
 import os
-
 import pytest
 from bs4 import BeautifulSoup
 from tagesschauscraper.domain import archive, helper

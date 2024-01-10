@@ -4,9 +4,14 @@ import csv
 import datetime
 import os
 from dataclasses import dataclass
-from typing import Sequence, Union
+from typing import List, Optional, Sequence, Union
 
 from bs4 import BeautifulSoup, Tag
+from tagesschauscraper.domain.archive import (
+    Archive,
+    ArchiveFilter,
+    get_archive_html,
+)
 
 from tagesschauscraper.domain.helper import (
     AbstractScraper,
@@ -14,6 +19,7 @@ from tagesschauscraper.domain.helper import (
     extract_link,
     extract_text,
     is_tag_in_soup,
+    get_extraction_timestamp,
 )
 
 
@@ -94,18 +100,14 @@ class TeaserScraper(AbstractScraper):
         if isinstance(tag, Tag):
             return extract_text(tag)
 
-    def extract(
-        self, extraction_timestamp: datetime.datetime | None = None
-    ) -> Teaser:
+    def extract(self) -> Teaser:
         teaser = Teaser(
             date=self.extract_date(),
             topline=self.extract_topline(),
             headline=self.extract_headline(),
             shorttext=self.extract_shorttext(),
             article_link=self.extract_article_link(),
-            extraction_timestamp=self.get_extraction_timestamp(
-                extraction_timestamp
-            ),
+            extraction_timestamp=get_extraction_timestamp(),
         )
         return teaser
 
@@ -148,3 +150,17 @@ def remove_extraction_timestamp(teaser: Teaser):
         Teaser with removed extraction timestamp
     """
     return setattr(teaser, "extraction_timestamp", None)
+
+
+def scrape_teaser(
+    archive_filter: ArchiveFilter,
+) -> List[Teaser]:
+    """
+    Domain service function for retrieving a list of teasers from the archive
+    """
+    archive_html = get_archive_html(archive_filter)
+    archive = Archive(archive_html)
+    return [
+        TeaserScraper(raw_teaser).extract()
+        for raw_teaser in archive.extract_teaser_list()
+    ]

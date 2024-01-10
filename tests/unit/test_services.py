@@ -2,19 +2,23 @@ import datetime
 from pathlib import Path
 from unittest.mock import patch
 
+
 from tagesschauscraper.domain.archive import ArchiveFilter
 from tagesschauscraper.domain.article import Article
-from tagesschauscraper.domain.teaser import Teaser
-from tagesschauscraper.service_layer.service import (
+from tagesschauscraper.domain.teaser import Teaser, scrape_teaser
+from tagesschauscraper.domain.article import (
     scrape_article,
-    scrape_teaser,
 )
 
 ARCHIVE_TEST_DATA_DIR = Path("tests/data/archive/")
 
 
+@patch("tagesschauscraper.domain.teaser.get_extraction_timestamp")
 @patch("tagesschauscraper.domain.archive.requests.get")
-def test_scrape_all_teaser_for_date(mock_get, archive_with_teaser_list_html):
+def test_scrape_all_teaser_for_date(
+    mock_get, mock_extraction_timestamp, archive_with_teaser_list_html
+):
+    mock_extraction_timestamp.return_value = "2023-01-01T00:00:00"
     mock_get.return_value.ok = True
     mock_get.return_value.text = archive_with_teaser_list_html
     expected_teaser_list = [
@@ -31,14 +35,16 @@ def test_scrape_all_teaser_for_date(mock_get, archive_with_teaser_list_html):
     archive_filter = ArchiveFilter(
         date=datetime.date(2023, 11, 4), news_category="wirtschaft"
     )
-    teaser_list = scrape_teaser(
-        archive_filter, extraction_timestamp=datetime.datetime(2023, 1, 1)
-    )
+    teaser_list = scrape_teaser(archive_filter)
     assert expected_teaser_list == teaser_list
 
 
+@patch("tagesschauscraper.domain.article.get_extraction_timestamp")
 @patch("tagesschauscraper.domain.article.requests.get")
-def test_scrape_articles_from_teaser(mock_get, expected_article_html):
+def test_scrape_articles_from_teaser(
+    mock_get, mock_extraction_timestamp, expected_article_html
+):
+    mock_extraction_timestamp.return_value = "2023-01-01T00:00:00"
     mock_get.return_value.ok = True
     mock_get.return_value.text = expected_article_html
     expected_article_list = [
@@ -64,7 +70,5 @@ def test_scrape_articles_from_teaser(mock_get, expected_article_html):
             extraction_timestamp="2023-01-01T00:00:00",
         )
     ]
-    article_list = scrape_article(
-        teaser_list, extraction_timestamp=datetime.datetime(2023, 1, 1)
-    )
+    article_list = scrape_article(teaser_list)
     assert article_list == expected_article_list
