@@ -1,0 +1,27 @@
+---
+teaser:
+  required:
+    name: "div"
+    attrs:
+      class: "teaser-right twelve"
+  tags:
+    article_link:
+      name: null
+      attrs:
+        class: "teaser-right__link"
+    topline:
+      name: null
+      attrs: 
+        class: "teaser-right__labeltopline"
+    headline:
+      name: null
+      attrs: 
+        class: "teaser-right__headline"
+    shorttext:
+      name: null
+      attrs:
+        class: "teaser-right__shorttext"
+    date:
+      name: null
+      attrs: 
+        class: "teaser-right__date"

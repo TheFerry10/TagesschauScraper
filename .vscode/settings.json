@@ -3,5 +3,16 @@
         "tests"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "pylint.args": [
+        "--disable=missing-module-docstring",
+        "--disable=missing-class-docstring",
+        "--disable=missing-function-docstring"
+    ],
+    "cSpell.words": [
+        "expectedTeaser",
+        "shorttext",
+        "tagesschauscraper",
+        "topline"
+    ]
 }

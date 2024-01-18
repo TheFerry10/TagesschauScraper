@@ -24,7 +24,7 @@ ARCHIVE_TEST_DATA_DIR = Path("tests/data/archive/")
 )
 def test_extract_teaser_list(archive_html):
     soup = BeautifulSoup(archive_html, "html.parser")
-    archive_ = archive.Archive(soup)
+    archive_ = archive.ArchiveScraper(soup)
     teaser_list = archive_.extract_teaser_list()
     teaser_dates = [t.get("data-teaserdate") for t in teaser_list]
     expected_teaser_dates = [
@@ -48,14 +48,14 @@ def test_extract_teaser_list(archive_html):
 )
 def test_archive_with_input(archive_html, is_valid):
     soup = BeautifulSoup(archive_html, "html.parser")
-    archive_ = archive.Archive(soup)
+    archive_ = archive.ArchiveScraper(soup)
     assert archive_.valid == is_valid
 
 
 @pytest.mark.parametrize("archive_html", ["date.html"], indirect=True)
 def test_extract_date(archive_html):
     soup = BeautifulSoup(archive_html, "html.parser")
-    archive_ = archive.Archive(soup)
+    archive_ = archive.ArchiveScraper(soup)
     expected_date: str = "1. Oktober 2023"
     assert archive_.extract_date() == expected_date
 
@@ -65,7 +65,7 @@ def test_extract_date(archive_html):
 )
 def test_extract_news_categories(archive_html):
     soup = BeautifulSoup(archive_html, "html.parser")
-    archive_ = archive.Archive(soup)
+    archive_ = archive.ArchiveScraper(soup)
     expected_categories = {
         "Alle\n                Ressorts",
         "Inland",

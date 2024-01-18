@@ -35,6 +35,7 @@ def test_scrape_all_teaser_for_date(
     archive_filter = ArchiveFilter(
         date=datetime.date(2023, 11, 4), news_category="wirtschaft"
     )
+    # input for scraper_teaser: html_teaser_list
     teaser_list = scrape_teaser(archive_filter)
     assert expected_teaser_list == teaser_list
 

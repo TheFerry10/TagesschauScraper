@@ -1,17 +1,9 @@
 from __future__ import annotations
 
-import csv
-import datetime
-import os
 from dataclasses import dataclass
-from typing import List, Optional, Sequence, Union
+from typing import List, Optional, Callable, Dict
 
 from bs4 import BeautifulSoup, Tag
-from tagesschauscraper.domain.archive import (
-    Archive,
-    ArchiveFilter,
-    get_archive_html,
-)
 
 from tagesschauscraper.domain.helper import (
     AbstractScraper,
@@ -23,39 +15,20 @@ from tagesschauscraper.domain.helper import (
 )
 
 
+class HtmlTagNotExists(Exception):
+    pass
+
+
 @dataclass
-class Teaser:
-    date: str
-    topline: str
-    headline: str
-    shorttext: str
-    article_link: str
-    extraction_timestamp: str | None = None
+class RequiredContent:
+    tag_definition: TagDefinition
 
 
-class TeaserScraper(AbstractScraper):
-    """
-    A class for extracting information from news teaser elements.
-    """
-
-    RequiredHTMLContent = {
-        "tagDefinition": TagDefinition(
-            "div", {"class": "teaser-right twelve"}
-        ),
-    }
-
-    def __init__(self, soup: BeautifulSoup) -> None:
-        """
-        Initializes the Teaser with the provided BeautifulSoup element.
-
-        Parameters
-        ----------
-        soup : BeautifulSoup
-            BeautifulSoup object representing an element for a news teaser.
-        """
+class SoapValidator:
+    def __init__(self, soup: BeautifulSoup, required_content: RequiredContent):
         self.soup = soup
+        self.required_content = required_content
         self.valid = False
-        self.validate()
 
     def validate(self):
         """
@@ -72,30 +45,90 @@ class TeaserScraper(AbstractScraper):
             News teaser information is valid, when the function returns True.
         """
         self.valid = is_tag_in_soup(
-            self.soup, self.RequiredHTMLContent["tagDefinition"]
+            self.soup, self.required_content.tag_definition
         )
 
-    def extract_article_link(self) -> Union[str, None]:
-        tag = self.soup.find(attrs={"class": "teaser-right__link"})
-        if isinstance(tag, Tag):
-            return extract_link(tag)
 
-    def extract_topline(self) -> Union[str, None]:
-        tag = self.soup.find(attrs={"class": "teaser-right__labeltopline"})
-        if isinstance(tag, Tag):
-            return extract_text(tag)
+@dataclass
+class Teaser:
+    date: str
+    topline: str
+    headline: str
+    shorttext: str
+    article_link: str
+    extraction_timestamp: str
 
-    def extract_headline(self) -> Union[str, None]:
+
+@dataclass
+class TeaserConfig:
+    required: TagDefinition
+    tags: Dict[str, TagDefinition]
+
+
+class TeaserScraper(AbstractScraper):
+    """
+    A class for extracting information from news teaser elements.
+    """
+
+    def __init__(self, soup: BeautifulSoup, config: TeaserConfig) -> None:
+        """
+        Initializes the Teaser with the provided BeautifulSoup element.
+
+        Parameters
+        ----------
+        soup : BeautifulSoup
+            BeautifulSoup object representing an element for a news teaser.
+        """
+        self.soup = soup
+        self.config = config
+
+    def can_scrape(self) -> Optional[bool]:
+        validator = SoapValidator(
+            self.soup,
+            required_content=RequiredContent(
+                # tag_definition=TagDefinition(**self.config.required)
+                tag_definition=self.config.required
+            ),
+        )
+        validator.validate()
+        return validator.valid
+
+    def extract_tag(
+        self, tag: TagDefinition, extract_function: Callable = extract_text
+    ) -> str:
+        page_elements = self.soup.find_all(name=tag.name, attrs=tag.attrs)
+        if page_elements:
+            links: List = []
+            for page_element in page_elements:
+                if isinstance(page_element, Tag):
+                    link = extract_function(page_element)
+                    links.append(link)
+            return "|".join(links)
+        raise HtmlTagNotExists(
+            f"No element found in html with name {tag.name} and attrs"
+            f" {tag.attrs}"
+        )
+
+    def extract_article_link(self) -> str:
+        # tag = TagDefinition(**self.config.tags["article_link"])
+        tag = self.config.tags["article_link"]
+        return self.extract_tag(tag, extract_function=extract_link)
+
+    def extract_topline(self) -> str:
+        tag = TagDefinition(attrs={"class": "teaser-right__labeltopline"})
+        return self.extract_tag(tag, extract_function=extract_text)
+
+    def extract_headline(self) -> str:
         tag = self.soup.find(attrs={"class": "teaser-right__headline"})
         if isinstance(tag, Tag):
             return extract_text(tag)
 
-    def extract_shorttext(self) -> Union[str, None]:
+    def extract_shorttext(self) -> str:
         tag = self.soup.find(attrs={"class": "teaser-right__shorttext"})
         if isinstance(tag, Tag):
             return extract_text(tag)
 
-    def extract_date(self) -> Union[str, None]:
+    def extract_date(self) -> str:
         tag = self.soup.find(attrs={"class": "teaser-right__date"})
         if isinstance(tag, Tag):
             return extract_text(tag)
@@ -112,55 +145,13 @@ class TeaserScraper(AbstractScraper):
         return teaser
 
 
-def write_teaser_list(teaser_list: Sequence[dict]):
-    datetime_str = (
-        datetime.datetime.utcnow()
-        .replace(microsecond=0)
-        .strftime("%Y%m%d%H%M")
-    )
-    output_dir = "data"
-    file_name = f"teaser_{datetime_str}.csv"
-    with open(
-        os.path.join(output_dir, file_name), "w", newline="", encoding="utf8"
-    ) as csv_file:
-        fieldnames = [
-            "DATE",
-            "TOPLINE",
-            "HEADLINE",
-            "SHORTTEXT",
-            "ARTICLE_LINK",
-            "EXTRACTION_TIMESTAMP",
-        ]
-        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(teaser_list)
-
-
-def remove_extraction_timestamp(teaser: Teaser):
+def scrape_teaser_list(teaser_list: List[str]) -> List[Teaser]:
     """
-    Remove the extraction timestamp from teaser
-
-    Parameters
-    ----------
-    teaser : Teaser
-
-    Returns
-    -------
-    Teaser
-        Teaser with removed extraction timestamp
+    Domain service function for retrieving a list of teasers
     """
-    return setattr(teaser, "extraction_timestamp", None)
-
-
-def scrape_teaser(
-    archive_filter: ArchiveFilter,
-) -> List[Teaser]:
-    """
-    Domain service function for retrieving a list of teasers from the archive
-    """
-    archive_html = get_archive_html(archive_filter)
-    archive = Archive(archive_html)
-    return [
-        TeaserScraper(raw_teaser).extract()
-        for raw_teaser in archive.extract_teaser_list()
-    ]
+    result = []
+    for raw_teaser in teaser_list:
+        scraper = TeaserScraper(raw_teaser)
+        teaser = scraper.extract()
+        result.append(teaser)
+    return result

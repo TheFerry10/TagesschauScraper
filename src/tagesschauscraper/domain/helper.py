@@ -3,7 +3,7 @@ import datetime
 import hashlib
 import os
 from dataclasses import dataclass
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from bs4 import BeautifulSoup, Tag
 
@@ -68,13 +68,10 @@ class DateDirectoryTreeCreator:
         self.date_pattern = date_pattern
         self.date_ = date_
         self.root_dir = root_dir
-        self.file_path = None
 
     def create_file_path_from_date(
         self,
-        date_pattern: Union[str, None] = None,
-        root_dir: Union[str, None] = None,
-    ) -> str:
+    ):
         """
         Create a hierarchical file path from the given date object without
         creating directories.
@@ -90,19 +87,13 @@ class DateDirectoryTreeCreator:
             Default root directory from class initialization will be used when
             no directory is provided.
         """
-        if date_pattern is None:
-            date_pattern = self.date_pattern
-        if root_dir is None:
-            root_dir = self.root_dir
-        self.file_path = os.path.join(
-            root_dir, self.date_.strftime(date_pattern)
+        file_path = os.path.join(
+            self.root_dir, self.date_.strftime(self.date_pattern)
         )
-        return self.file_path
+        return file_path
 
     def make_dir_tree_from_date(
         self,
-        date_pattern: Union[str, None] = None,
-        root_dir: Union[str, None] = None,
     ) -> None:
         """
         Make a hierarchical directory tree from the given date object.
@@ -118,7 +109,7 @@ class DateDirectoryTreeCreator:
             Default root directory from class initialization will be used when
             no directory is provided.
         """
-        file_path = self.create_file_path_from_date(date_pattern, root_dir)
+        file_path = self.create_file_path_from_date()
         self.make_dir_tree_from_file_path(file_path)
 
     def make_dir_tree_from_file_path(self, file_path: str) -> None:
@@ -127,7 +118,7 @@ class DateDirectoryTreeCreator:
 
 def create_file_name_from_date(
     date_or_datetime: Union[datetime.date, datetime.datetime],
-    date_pattern: Union[str, None] = None,
+    date_pattern: Optional[str] = None,
     prefix: str = "",
     suffix: str = "",
     extension: str = "",
@@ -206,8 +197,8 @@ def cast_to_list(input_: object) -> list[object]:
 
 @dataclass
 class TagDefinition:
-    name: str
-    attrs: Dict[str, str]
+    name: Optional[str] = None
+    attrs: Optional[Dict[str, str]] = None
 
 
 class NotValidHTML(Exception):
@@ -216,13 +207,7 @@ class NotValidHTML(Exception):
 
 class AbstractScraper(abc.ABC):
     @abc.abstractmethod
-    def validate(self):
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def extract(
-        self, extraction_timestamp: Union[datetime.datetime, None] = None
-    ):
+    def extract(self):
         raise NotImplementedError
 
 

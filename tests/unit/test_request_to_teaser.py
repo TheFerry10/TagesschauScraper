@@ -4,7 +4,10 @@ from unittest.mock import patch
 
 from bs4 import BeautifulSoup
 
-from tagesschauscraper.domain.archive import Archive, get_archive_response
+from tagesschauscraper.domain.archive import (
+    ArchiveScraper,
+    get_archive_response,
+)
 from tagesschauscraper.domain.article import (
     Article,
     ArticleScraper,

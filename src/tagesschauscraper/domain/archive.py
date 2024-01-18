@@ -57,7 +57,7 @@ def is_selected_in_categories(
     return category in NEWS_CATEGORIES
 
 
-class Archive(AbstractScraper):
+class ArchiveScraper(AbstractScraper):
     """
     A class for extracting information from news archive.
     """
