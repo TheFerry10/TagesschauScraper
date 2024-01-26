@@ -1,12 +1,14 @@
 import datetime
 import os
 import shutil
+
 import pytest
 from bs4 import BeautifulSoup
 from sqlalchemy import create_engine
 from sqlalchemy.orm import clear_mappers, sessionmaker
 
 from tagesschauscraper.adapters.orm import metadata, start_mappers
+from tagesschauscraper.domain import helper
 from tagesschauscraper.domain.archive import (
     ArchiveFilter,
     create_request_params,
@@ -18,7 +20,6 @@ from tagesschauscraper.domain.constants import (
     TEASER_TEST_DATA_DIR,
 )
 from tagesschauscraper.domain.teaser import TeaserScraper
-from tagesschauscraper.domain import helper
 
 
 @pytest.fixture
@@ -149,7 +150,7 @@ def valid_teaser_():
     ) as f:
         content = f.read()
     soup = BeautifulSoup(content, "html.parser")
-    return TeaserScraper(soup)
+    return soup
 
 
 @pytest.fixture(name="archive_with_teaser_list_html")

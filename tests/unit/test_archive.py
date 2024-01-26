@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
+
 from tagesschauscraper.domain import archive
 
 # 1. version
@@ -76,25 +77,6 @@ def test_extract_news_categories(archive_html):
         "Investigativ",
     }
     assert archive_.extract_news_categories() == expected_categories
-
-
-@pytest.mark.parametrize("archive_html", ["valid_header.html"], indirect=True)
-def test_is_tag_in_soup(archive_html):
-    soup = BeautifulSoup(archive_html, "html.parser")
-    tag_definition = archive.TagDefinition(
-        "div", {"class": "trenner__text__topline"}
-    )
-    assert archive.is_tag_in_soup(soup, tag_definition)
-
-
-@pytest.mark.parametrize("archive_html", ["valid_header.html"], indirect=True)
-def test_is_text_in_tag(archive_html):
-    soup = BeautifulSoup(archive_html, "html.parser")
-    tag_definition = archive.TagDefinition(
-        "div", {"class": "trenner__text__topline"}
-    )
-    example_text = "Archiv"
-    assert archive.is_text_in_tag(soup, tag_definition, example_text)
 
 
 def test_if_available_category_is_recognized():

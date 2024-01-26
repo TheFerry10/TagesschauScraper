@@ -1,10 +1,14 @@
 import abc
 import datetime
 import hashlib
+import json
 import os
 from dataclasses import dataclass
-from typing import Dict, Optional, Union
+from io import TextIOWrapper
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Union
 
+import yaml
 from bs4 import BeautifulSoup, Tag
 
 
@@ -248,3 +252,144 @@ def extract_text(tag: Tag) -> Union[str, None]:
     if isinstance(text, str):
         return clean_string(text)
     return None
+
+
+@dataclass
+class ValidationContent:
+    existing_tags: List[TagDefinition]
+    existing_strings_in_tags: List[Tuple[str, TagDefinition]]
+
+
+class SoapValidator:
+    def __init__(
+        self, soup: BeautifulSoup, validation_content: ValidationContent
+    ):
+        self.soup = soup
+        self.validation_content = validation_content
+        self.valid = False
+
+    def validate(self):
+        """
+        Check if scraped information exists for all required attributes.
+
+        Parameters
+        ----------
+        teaser_info : dict
+            Dictionary containing news teaser information.
+
+        Returns
+        -------
+        bool
+            News teaser information is valid, when the function returns True.
+        """
+
+        are_all_tags_in_soup = all(
+            (
+                is_tag_in_soup(self.soup, tag)
+                for tag in self.validation_content.existing_tags
+            )
+        )
+        are_all_strings_in_tags = all(
+            (
+                is_text_in_tag(self.soup, tag, text)
+                for text, tag in self.validation_content.existing_strings_in_tags
+            )
+        )
+        self.valid = all([are_all_tags_in_soup, are_all_strings_in_tags])
+
+
+class HtmlTagNotExists(Exception):
+    pass
+
+
+@dataclass
+class Config:
+    scraping: Dict[str, TagDefinition]
+    validation: ValidationContent
+
+
+def load_yaml(stream: TextIOWrapper) -> dict:
+    result = yaml.safe_load(stream)
+    if isinstance(result, dict):
+        return result
+    raise ValueError
+
+
+def load_json(stream: TextIOWrapper) -> dict:
+    result = json.load(stream)
+    if isinstance(result, dict):
+        return result
+    raise ValueError
+
+
+class ConfigReader:
+    _VALIDATION = "validation"
+    _SCRAPING = "scraping"
+    _MANDATORY_FIELDS = {_VALIDATION, _SCRAPING}
+    _EXTENSION_MAPPINGS = {
+        ".yaml": load_yaml,
+        ".yml": load_yaml,
+        ".json": load_json,
+        ".jsonl": load_json,
+    }
+
+    def __init__(self, config_file: Path):
+        self.config_file = config_file
+        self.file_extension = config_file.suffix
+        self.reader = self._EXTENSION_MAPPINGS.get(
+            self.file_extension, load_yaml
+        )
+        self.config_raw: dict = {}
+
+    def read(self) -> dict:
+        with open(self.config_file, "r", encoding="utf-8") as stream:
+            self.config_raw = self.reader(stream)
+        return self.config_raw
+
+    def validation_mapping(self, validation_config: dict) -> ValidationContent:
+        if validation_config.get("existing_tags"):
+            existing_tags = [
+                TagDefinition(item.get("name"), item.get("attrs"))
+                for item in validation_config.get("existing_tags")
+            ]
+        else:
+            existing_tags = []
+
+        if validation_config.get("existing_strings_in_tags"):
+            existing_strings_in_tags = [
+                (
+                    item.get("include_string"),
+                    TagDefinition(
+                        item.get("tag", {}).get("name"),
+                        item.get("tag", {}).get("attrs"),
+                    ),
+                )
+                for item in validation_config.get("existing_strings_in_tags")
+            ]
+        else:
+            existing_strings_in_tags = []
+        return ValidationContent(
+            existing_tags=existing_tags,
+            existing_strings_in_tags=existing_strings_in_tags,
+        )
+
+    def scraping_mapping(
+        self, scraping_config: List[dict]
+    ) -> Dict[str, TagDefinition]:
+        return {
+            elem.get("id"): TagDefinition(
+                elem.get("tag", {}).get("name"),
+                elem.get("tag", {}).get("attrs"),
+            )
+            for elem in scraping_config
+        }
+
+    def mapping(self, config_raw: dict) -> Config:
+        validation = self.validation_mapping(config_raw.get(self._VALIDATION))
+        scraping = self.scraping_mapping(config_raw.get(self._SCRAPING))
+
+        return Config(validation=validation, scraping=scraping)
+
+    def load(self) -> Config:
+        config_raw = self.read()
+        return self.mapping(config_raw)

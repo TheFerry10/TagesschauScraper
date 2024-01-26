@@ -1,5 +1,6 @@
 import pytest
 from bs4 import BeautifulSoup
+
 from tagesschauscraper.domain.article import ArticleScraper, ArticleTagNotFound
 
 

@@ -1,4 +1,5 @@
 from sqlalchemy.sql import text
+
 from tagesschauscraper.domain.article import Article
 from tagesschauscraper.domain.teaser import Teaser
 

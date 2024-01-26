@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from sqlalchemy.sql import text
+
 from tagesschauscraper.adapters import repository
 from tagesschauscraper.domain.article import Article
 from tagesschauscraper.domain.teaser import Teaser

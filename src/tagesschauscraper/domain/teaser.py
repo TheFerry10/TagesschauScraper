@@ -1,52 +1,20 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional, Callable, Dict
+from typing import Callable, List, Optional
 
 from bs4 import BeautifulSoup, Tag
 
 from tagesschauscraper.domain.helper import (
     AbstractScraper,
+    Config,
+    SoapValidator,
     TagDefinition,
-    extract_link,
     extract_text,
-    is_tag_in_soup,
+    HtmlTagNotExists,
+    extract_link,
     get_extraction_timestamp,
 )
-
-
-class HtmlTagNotExists(Exception):
-    pass
-
-
-@dataclass
-class RequiredContent:
-    tag_definition: TagDefinition
-
-
-class SoapValidator:
-    def __init__(self, soup: BeautifulSoup, required_content: RequiredContent):
-        self.soup = soup
-        self.required_content = required_content
-        self.valid = False
-
-    def validate(self):
-        """
-        Check if scraped information exists for all required attributes.
-
-        Parameters
-        ----------
-        teaser_info : dict
-            Dictionary containing news teaser information.
-
-        Returns
-        -------
-        bool
-            News teaser information is valid, when the function returns True.
-        """
-        self.valid = is_tag_in_soup(
-            self.soup, self.required_content.tag_definition
-        )
 
 
 @dataclass
@@ -59,18 +27,12 @@ class Teaser:
     extraction_timestamp: str
 
 
-@dataclass
-class TeaserConfig:
-    required: TagDefinition
-    tags: Dict[str, TagDefinition]
-
-
 class TeaserScraper(AbstractScraper):
     """
     A class for extracting information from news teaser elements.
     """
 
-    def __init__(self, soup: BeautifulSoup, config: TeaserConfig) -> None:
+    def __init__(self, soup: BeautifulSoup, config: Config) -> None:
         """
         Initializes the Teaser with the provided BeautifulSoup element.
 
@@ -84,11 +46,8 @@ class TeaserScraper(AbstractScraper):
 
     def can_scrape(self) -> Optional[bool]:
         validator = SoapValidator(
-            self.soup,
-            required_content=RequiredContent(
-                # tag_definition=TagDefinition(**self.config.required)
-                tag_definition=self.config.required
-            ),
+            soup=self.soup,
+            validation_content=self.config.validation,
         )
         validator.validate()
         return validator.valid
@@ -109,37 +68,14 @@ class TeaserScraper(AbstractScraper):
             f" {tag.attrs}"
         )
 
-    def extract_article_link(self) -> str:
-        # tag = TagDefinition(**self.config.tags["article_link"])
-        tag = self.config.tags["article_link"]
-        return self.extract_tag(tag, extract_function=extract_link)
-
-    def extract_topline(self) -> str:
-        tag = TagDefinition(attrs={"class": "teaser-right__labeltopline"})
-        return self.extract_tag(tag, extract_function=extract_text)
-
-    def extract_headline(self) -> str:
-        tag = self.soup.find(attrs={"class": "teaser-right__headline"})
-        if isinstance(tag, Tag):
-            return extract_text(tag)
-
-    def extract_shorttext(self) -> str:
-        tag = self.soup.find(attrs={"class": "teaser-right__shorttext"})
-        if isinstance(tag, Tag):
-            return extract_text(tag)
-
-    def extract_date(self) -> str:
-        tag = self.soup.find(attrs={"class": "teaser-right__date"})
-        if isinstance(tag, Tag):
-            return extract_text(tag)
-
     def extract(self) -> Teaser:
+        tags = self.config.scraping
         teaser = Teaser(
-            date=self.extract_date(),
-            topline=self.extract_topline(),
-            headline=self.extract_headline(),
-            shorttext=self.extract_shorttext(),
-            article_link=self.extract_article_link(),
+            date=self.extract_tag(tags["date"], extract_text),
+            topline=self.extract_tag(tags["topline"], extract_text),
+            headline=self.extract_tag(tags["headline"], extract_text),
+            shorttext=self.extract_tag(tags["shorttext"], extract_text),
+            article_link=self.extract_tag(tags["article_link"], extract_link),
             extraction_timestamp=get_extraction_timestamp(),
         )
         return teaser

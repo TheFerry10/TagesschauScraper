@@ -14,8 +14,8 @@ from tagesschauscraper.domain.helper import (
     AbstractScraper,
     TagDefinition,
     extract_text,
-    is_tag_in_soup,
     get_extraction_timestamp,
+    is_tag_in_soup,
 )
 from tagesschauscraper.domain.teaser import Teaser
 

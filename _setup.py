@@ -1,6 +1,6 @@
-from setuptools import setup, find_packages
-from tagesschauscraper import __version__
+from setuptools import find_packages, setup
 
+from tagesschauscraper import __version__
 
 with open("README.rst", "r") as longdesc:
     long_description = longdesc.read()

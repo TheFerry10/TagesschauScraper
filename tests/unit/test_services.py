@@ -2,13 +2,9 @@ import datetime
 from pathlib import Path
 from unittest.mock import patch
 
-
 from tagesschauscraper.domain.archive import ArchiveFilter
-from tagesschauscraper.domain.article import Article
+from tagesschauscraper.domain.article import Article, scrape_article
 from tagesschauscraper.domain.teaser import Teaser, scrape_teaser
-from tagesschauscraper.domain.article import (
-    scrape_article,
-)
 
 ARCHIVE_TEST_DATA_DIR = Path("tests/data/archive/")
 

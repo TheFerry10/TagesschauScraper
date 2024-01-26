@@ -1,27 +1,30 @@
 ---
-teaser:
-  required:
-    name: "div"
-    attrs:
-      class: "teaser-right twelve"
-  tags:
-    article_link:
+validation:
+  existing_tags:
+  existing_strings_in_tags:
+scraping:
+  - id: article_link
+    tag:
       name: null
       attrs:
         class: "teaser-right__link"
-    topline:
+  - id: topline
+    tag:
       name: null
       attrs: 
         class: "teaser-right__labeltopline"
-    headline:
+  - id: headline
+    tag:
       name: null
       attrs: 
         class: "teaser-right__headline"
-    shorttext:
+  - id: shorttext
+    tag:
       name: null
       attrs:
         class: "teaser-right__shorttext"
-    date:
+  - id: date
+    tag:
       name: null
       attrs: 
         class: "teaser-right__date"
