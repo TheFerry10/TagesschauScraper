@@ -43,7 +43,9 @@ class ArticleScraper(AbstractScraper):
     """
 
     RequiredHTMLContent = {
-        "tagDefinition": TagDefinition("div", {"class": "seitenkopf__title"}),
+        "tagDefinition": TagDefinition(
+            name="div", attrs={"class": "seitenkopf__title"}
+        ),
     }
 
     def __init__(self, soup: BeautifulSoup) -> None:

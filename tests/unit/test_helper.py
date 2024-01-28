@@ -11,7 +11,7 @@ from tagesschauscraper.domain.archive import (
 )
 from tagesschauscraper.domain.helper import SoapValidator
 from tagesschauscraper.domain.helper import (
-    ValidationContent,
+    ValidationConfig,
     DateDirectoryTreeCreator,
     create_file_name_from_date,
     transform_datetime_str,
@@ -21,6 +21,7 @@ from tagesschauscraper.domain.helper import (
     extract_link,
     is_text_in_tag,
     is_tag_in_soup,
+    ExistingStringInTag,
 )
 
 
@@ -139,20 +140,22 @@ def test_extract_text_from_tag():
 
 def test_is_text_in_tag(valid_teaser):
     tag_definition = TagDefinition(
-        "span", {"class": "teaser-right__labeltopline"}
+        name="span", attrs={"class": "teaser-right__labeltopline"}
     )
     example_text = " topline"
     assert is_text_in_tag(valid_teaser, tag_definition, example_text)
 
 
 def test_is_tag_in_soup(valid_teaser):
-    tag_definition = TagDefinition("span", {"class": "teaser-right__headline"})
+    tag_definition = TagDefinition(
+        name="span", attrs={"class": "teaser-right__headline"}
+    )
     assert is_tag_in_soup(valid_teaser, tag_definition)
 
 
 def test_validator_with_validation_content(valid_teaser):
     existing_tags = [
-        TagDefinition(name, attrs)
+        TagDefinition(name=name, attrs=attrs)
         for name, attrs in [
             ("span", {"class": "teaser-right__labeltopline"}),
             ("span", {"class": "teaser-right__headline"}),
@@ -160,23 +163,20 @@ def test_validator_with_validation_content(valid_teaser):
         ]
     ]
     existing_strings_in_tags = [
-        (
-            "Test topline",
-            TagDefinition(
-                name="span", attrs={"class": "teaser-right__labeltopline"}
-            ),
-        ),
-        (
-            "headline",
-            TagDefinition(
-                name="span", attrs={"class": "teaser-right__headline"}
-            ),
-        ),
+        ExistingStringInTag(
+            include_string=include_string,
+            tag=TagDefinition(name=name, attrs=attrs),
+        )
+        for include_string, name, attrs in [
+            ("Test topline", "span", {"class": "teaser-right__labeltopline"}),
+            ("headline", "span", {"class": "teaser-right__headline"}),
+        ]
     ]
-    validation_content = ValidationContent(
+
+    validation_config = ValidationConfig(
         existing_tags=existing_tags,
         existing_strings_in_tags=existing_strings_in_tags,
     )
-    validator = SoapValidator(valid_teaser, validation_content)
+    validator = SoapValidator(valid_teaser, validation_config)
     validator.validate()
     assert validator.valid

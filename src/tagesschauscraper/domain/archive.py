@@ -64,7 +64,7 @@ class ArchiveScraper(AbstractScraper):
 
     RequiredHTMLContent = {
         "tagDefinition": TagDefinition(
-            "div", {"class": "trenner__text__topline"}
+            name="div", attrs={"class": "trenner__text__topline"}
         ),
         "text": "Archiv",
     }

@@ -47,7 +47,7 @@ class TeaserScraper(AbstractScraper):
     def can_scrape(self) -> Optional[bool]:
         validator = SoapValidator(
             soup=self.soup,
-            validation_content=self.config.validation,
+            validation_config=self.config.validation,
         )
         validator.validate()
         return validator.valid
@@ -57,16 +57,21 @@ class TeaserScraper(AbstractScraper):
     ) -> str:
         page_elements = self.soup.find_all(name=tag.name, attrs=tag.attrs)
         if page_elements:
-            links: List = []
-            for page_element in page_elements:
-                if isinstance(page_element, Tag):
-                    link = extract_function(page_element)
-                    links.append(link)
-            return "|".join(links)
+            extracted_content = [
+                extract_function(page_element)
+                for page_element in page_elements
+                if isinstance(page_element, Tag)
+            ]
+            return self.concatenate_extracted_content(extracted_content)
         raise HtmlTagNotExists(
             f"No element found in html with name {tag.name} and attrs"
             f" {tag.attrs}"
         )
+
+    def concatenate_extracted_content(
+        self, content: List[str], delimiter="|"
+    ) -> str:
+        return delimiter.join(content)
 
     def extract(self) -> Teaser:
         tags = self.config.scraping

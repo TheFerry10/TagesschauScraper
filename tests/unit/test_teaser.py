@@ -9,11 +9,14 @@ from tagesschauscraper.domain.constants import TEASER_TEST_DATA_DIR
 from tagesschauscraper.domain.helper import (
     ConfigReader,
     TagDefinition,
-    ValidationContent,
+    ValidationConfig,
     extract_link,
     extract_text,
     SoapValidator,
     Config,
+    ScrapingConfig,
+    TagScrapingConfig,
+    ExistingStringInTag,
 )
 from tagesschauscraper.domain.teaser import Teaser
 
@@ -64,37 +67,45 @@ def valid_teaser_():
 
 
 def test_loading_config_from_file():
-    scraping = {
-        "article_link": TagDefinition(attrs={"class": "teaser-right__link"}),
-        "topline": TagDefinition(
-            attrs={"class": "teaser-right__labeltopline"}
-        ),
-        "headline": TagDefinition(attrs={"class": "teaser-right__headline"}),
-        "shorttext": TagDefinition(attrs={"class": "teaser-right__shorttext"}),
-        "date": TagDefinition(attrs={"class": "teaser-right__date"}),
-    }
+    tags = [
+        TagScrapingConfig(
+            id=id,
+            content_type=content_type,
+            tag=TagDefinition(name=name, attrs=attrs),
+        )
+        for id, content_type, name, attrs in [
+            ("article_link", "href", None, {"class": "teaser-right__link"}),
+            ("topline", "text", None, {"class": "teaser-right__labeltopline"}),
+            ("headline", "text", None, {"class": "teaser-right__headline"}),
+            ("shorttext", "text", None, {"class": "teaser-right__shorttext"}),
+            ("date", "text", None, {"class": "teaser-right__date"}),
+        ]
+    ]
+    scraping = ScrapingConfig(tags=tags)
+
     existing_tags = [
-        TagDefinition(name, attrs)
+        TagDefinition(name=name, attrs=attrs)
         for name, attrs in [
             ("div", {"class": "teaser-right twelve"}),
             ("span", {"class": "teaser-right__labeltopline"}),
         ]
     ]
+
     existing_strings_in_tags = [
-        (
-            "headline",
-            TagDefinition(
-                name="span", attrs={"class": "teaser-right__headline"}
-            ),
-        ),
-        (
-            "Test topline",
-            TagDefinition(
-                name="span", attrs={"class": "teaser-right__labeltopline"}
-            ),
-        ),
+        ExistingStringInTag(
+            include_string=include_string,
+            tag=TagDefinition(name=name, attrs=attrs),
+        )
+        for include_string, name, attrs in [
+            ("headline", "span", {"class": "teaser-right__headline"}),
+            ("Test topline", "span", {"class": "teaser-right__labeltopline"}),
+        ]
     ]
-    validation = ValidationContent(existing_tags, existing_strings_in_tags)
+
+    validation = ValidationConfig(
+        existing_tags=existing_tags,
+        existing_strings_in_tags=existing_strings_in_tags,
+    )
     expected_config = Config(scraping=scraping, validation=validation)
 
     filepath = Path("tests/data/config/teaser-config.yml")
@@ -104,20 +115,22 @@ def test_loading_config_from_file():
 
 
 def test_loading_config_from_file_without_validation():
-    scraping = {
-        "article_link": TagDefinition(attrs={"class": "teaser-right__link"}),
-        "topline": TagDefinition(
-            attrs={"class": "teaser-right__labeltopline"}
-        ),
-        "headline": TagDefinition(attrs={"class": "teaser-right__headline"}),
-        "shorttext": TagDefinition(attrs={"class": "teaser-right__shorttext"}),
-        "date": TagDefinition(attrs={"class": "teaser-right__date"}),
-    }
-
-    validation = ValidationContent(
-        existing_tags=[], existing_strings_in_tags=[]
-    )
-    expected_config = Config(scraping=scraping, validation=validation)
+    tags = [
+        TagScrapingConfig(
+            id=id,
+            content_type=content_type,
+            tag=TagDefinition(name=name, attrs=attrs),
+        )
+        for id, content_type, name, attrs in [
+            ("article_link", "href", None, {"class": "teaser-right__link"}),
+            ("topline", "text", None, {"class": "teaser-right__labeltopline"}),
+            ("headline", "text", None, {"class": "teaser-right__headline"}),
+            ("shorttext", "text", None, {"class": "teaser-right__shorttext"}),
+            ("date", "text", None, {"class": "teaser-right__date"}),
+        ]
+    ]
+    scraping = ScrapingConfig(tags=tags)
+    expected_config = Config(scraping=scraping)
 
     filepath = Path("tests/data/config/teaser-config-no-validation.yml")
     config_reader = ConfigReader(filepath)
@@ -155,43 +168,50 @@ def test_reading_scraper_config_from_yaml():
                 },
             ],
         },
-        "scraping": [
-            {
-                "id": "article_link",
-                "tag": {
-                    "name": None,
-                    "attrs": {"class": "teaser-right__link"},
+        "scraping": {
+            "tags": [
+                {
+                    "id": "article_link",
+                    "content_type": "href",
+                    "tag": {
+                        "name": None,
+                        "attrs": {"class": "teaser-right__link"},
+                    },
                 },
-            },
-            {
-                "id": "topline",
-                "tag": {
-                    "name": None,
-                    "attrs": {"class": "teaser-right__labeltopline"},
+                {
+                    "id": "topline",
+                    "content_type": "text",
+                    "tag": {
+                        "name": None,
+                        "attrs": {"class": "teaser-right__labeltopline"},
+                    },
                 },
-            },
-            {
-                "id": "headline",
-                "tag": {
-                    "name": None,
-                    "attrs": {"class": "teaser-right__headline"},
+                {
+                    "id": "headline",
+                    "content_type": "text",
+                    "tag": {
+                        "name": None,
+                        "attrs": {"class": "teaser-right__headline"},
+                    },
                 },
-            },
-            {
-                "id": "shorttext",
-                "tag": {
-                    "name": None,
-                    "attrs": {"class": "teaser-right__shorttext"},
+                {
+                    "id": "shorttext",
+                    "content_type": "text",
+                    "tag": {
+                        "name": None,
+                        "attrs": {"class": "teaser-right__shorttext"},
+                    },
                 },
-            },
-            {
-                "id": "date",
-                "tag": {
-                    "name": None,
-                    "attrs": {"class": "teaser-right__date"},
+                {
+                    "id": "date",
+                    "content_type": "text",
+                    "tag": {
+                        "name": None,
+                        "attrs": {"class": "teaser-right__date"},
+                    },
                 },
-            },
-        ],
+            ]
+        },
     }
     assert config_raw == expected
 
@@ -229,6 +249,7 @@ def test_reading_scraper_config_from_json():
         "scraping": [
             {
                 "id": "article_link",
+                "content_type": "href",
                 "tag": {
                     "name": None,
                     "attrs": {"class": "teaser-right__link"},
@@ -236,6 +257,7 @@ def test_reading_scraper_config_from_json():
             },
             {
                 "id": "topline",
+                "content_type": "text",
                 "tag": {
                     "name": None,
                     "attrs": {"class": "teaser-right__labeltopline"},
@@ -243,6 +265,7 @@ def test_reading_scraper_config_from_json():
             },
             {
                 "id": "headline",
+                "content_type": "text",
                 "tag": {
                     "name": None,
                     "attrs": {"class": "teaser-right__headline"},
@@ -250,6 +273,7 @@ def test_reading_scraper_config_from_json():
             },
             {
                 "id": "shorttext",
+                "content_type": "text",
                 "tag": {
                     "name": None,
                     "attrs": {"class": "teaser-right__shorttext"},
@@ -257,6 +281,7 @@ def test_reading_scraper_config_from_json():
             },
             {
                 "id": "date",
+                "content_type": "text",
                 "tag": {
                     "name": None,
                     "attrs": {"class": "teaser-right__date"},
@@ -326,7 +351,7 @@ def test_extract(mock_extraction_timestamp, valid_teaser):
 def test_validation_for_valid_html_teaser(valid_teaser_html):
     soup = BeautifulSoup(valid_teaser_html, "html.parser")
     existing_tags = [TagDefinition("div", {"class": "teaser-right twelve"})]
-    validation_content = ValidationContent(
+    validation_content = ValidationConfig(
         existing_tags, existing_strings_in_tags=[]
     )
     validator = SoapValidator(soup, validation_content)
@@ -337,7 +362,7 @@ def test_validation_for_valid_html_teaser(valid_teaser_html):
 def test_validation_for_invalid_html_teaser(invalid_teaser_html):
     soup = BeautifulSoup(invalid_teaser_html, "html.parser")
     existing_tags = [TagDefinition("div", {"class": "teaser-right twelve"})]
-    validation_content = ValidationContent(
+    validation_content = ValidationConfig(
         existing_tags, existing_strings_in_tags=[]
     )
     validator = SoapValidator(soup, validation_content)
