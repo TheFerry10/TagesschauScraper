@@ -7,8 +7,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
-from tagesschauscraper import config
-from tagesschauscraper.adapters import repository
+from tagesschau import config
+from tagesschau.adapters import repository
 
 
 class AbstractTeaserUnitOfWork(abc.ABC):

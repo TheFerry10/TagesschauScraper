@@ -10,9 +10,19 @@
         "--disable=missing-function-docstring"
     ],
     "cSpell.words": [
+        "Ausland",
+        "bluescrape",
+        "bluescraper",
         "expectedTeaser",
+        "Faktenfinder",
+        "Februar",
+        "Investigativ",
+        "Ressorts",
         "shorttext",
         "tagesschauscraper",
-        "topline"
+        "teaserdate",
+        "topline",
+        "Wirtschaft",
+        "Wissen"
     ]
 }

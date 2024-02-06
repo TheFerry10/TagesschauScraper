@@ -3,26 +3,31 @@ import os
 
 import pytest
 from bs4 import BeautifulSoup
-
-from tagesschauscraper.domain.archive import (
-    TagDefinition,
-    ArchiveFilter,
-    create_request_params,
-)
-from tagesschauscraper.domain.helper import SoapValidator
-from tagesschauscraper.domain.helper import (
-    ValidationConfig,
+from bluescraper.fileutils import (
     DateDirectoryTreeCreator,
     create_file_name_from_date,
-    transform_datetime_str,
-    get_date_range,
+)
+from bluescraper.utils import (
     clean_string,
     extract_text,
-    extract_link,
-    is_text_in_tag,
+    get_date_range,
     is_tag_in_soup,
-    ExistingStringInTag,
+    is_text_in_tag,
+    transform_datetime_str,
 )
+
+from tagesschau.domain.archive import (
+    TagDefinition,
+)
+from bluescraper.validation import (
+    ExistingStringInTag,
+    SoapValidator,
+    ValidationConfig,
+)
+from tagesschau.domain.helper import (
+    extract_link,
+)
+from tagesschau.domain.model import ArchiveFilter, create_request_params
 
 
 def test_create_file_path_from_date(tmp_path) -> None:

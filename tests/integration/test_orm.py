@@ -1,7 +1,7 @@
 from sqlalchemy.sql import text
 
-from tagesschauscraper.domain.article import Article
-from tagesschauscraper.domain.teaser import Teaser
+from tagesschau.domain.model import Article
+from tagesschau.domain.model import Teaser
 
 
 def test_teaser_mapper_can_load_teasers(session):

@@ -1,0 +1,32 @@
+---
+validation:
+  existing_tags:
+    - name: "div"
+      attrs:
+        class: "teaser-right twelve"
+  existing_strings_in_tags:
+    - include_string: "Archiv"
+      tag:
+        name: "div"
+        attrs:
+          class: "trenner__text__topline"
+scraping:
+  tags:
+    - id: "news_category_names"
+      content_type: null
+      tag:
+        name: "li"
+        attrs:
+          class: "tabnav__item"
+    - id: "news_category_links"
+      content_type: "href"
+      tag:
+        name: "a"
+        attrs:
+          class: "textonly-btn"
+    - id: "date"
+      content_type: null
+      tag:
+        name: null
+        attrs: 
+          class: "archive__headline"

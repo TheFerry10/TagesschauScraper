@@ -3,8 +3,8 @@ import csv
 from pathlib import Path
 from typing import Dict
 
-from tagesschauscraper.domain.article import Article
-from tagesschauscraper.domain.teaser import Teaser
+from tagesschau.domain.model import Article
+from tagesschau.domain.model import Teaser
 
 
 class AbstractTeaserRepository(abc.ABC):

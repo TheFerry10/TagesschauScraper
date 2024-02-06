@@ -1,0 +1,57 @@
+---
+validation:
+  existing_tags:
+    - name: "div"
+      attrs:
+        class: "seitenkopf__title"
+  existing_strings_in_tags:
+scraping:
+  tags:
+    - id: "topline"
+      content_type: null
+      tag:
+        name: null
+        attrs:
+          class: "seitenkopf__topline"
+    - id: "headline"
+      content_type: null
+      tag:
+        name: null
+        attrs: 
+          class: "seitenkopf__headline--text"
+    - id: "metatextline"
+      content_type: null
+      tag:
+        name: null
+        attrs:
+          class: "metatextline"
+    - id: "subheads"
+      content_type: null
+      tag:
+        name: null
+        attrs: 
+          class: "meldung__subhead columns twelve m-ten m-offset-one l-eight l-offset-two liveblog--anchor"
+    - id: "tags"
+      content_type: null
+      tag:
+        name: "li"
+        attrs: 
+          class: "taglist__element"
+    - id: "abstract"
+      content_type: null
+      tag:
+        name: null
+        attrs: 
+          class: "textabsatz columns twelve m-ten m-offset-one l-eight l-offset-two"
+    - id: "paragraphs"
+      content_type: null
+      tag:
+        name: null
+        attrs: 
+          class: "textabsatz m-ten m-offset-one l-eight l-offset-two columns twelve"
+    - id: "article_link"
+      content_type: "content"
+      tag:
+        name: "meta"
+        attrs:
+          property: "og:url"

@@ -12,9 +12,11 @@ import logging
 import os
 import time
 from datetime import datetime
+import scraper.fileutils
 
-from tagesschauscraper.domain import archive, helper
-from tagesschauscraper.domain.constants import ARCHIVE_URL
+from tagesschau.domain import archive
+from tagesschau.domain.constants import ARCHIVE_URL
+import tagesschau.domain.model
 
 # Argument parsing
 parser = argparse.ArgumentParser(
@@ -60,7 +62,7 @@ args = parser.parse_args()
 # Set up logging
 if not os.path.exists(args.logdir):
     os.makedirs(args.logdir)
-log_file = helper.create_file_name_from_date(
+log_file = scraper.fileutils.create_file_name_from_date(
     datetime.now(), suffix="scrape", extension=".log"
 )
 logging.basicConfig(
@@ -78,7 +80,7 @@ date_ = datetime.strptime(args.date, input_date_pattern).date()
 logging.info(
     f"Initialize scraping for date {args.date} and category {args.category}"
 )
-archiveFilter = archive.ArchiveFilter(
+archiveFilter = tagesschau.domain.model.ArchiveFilter(
     {"date": date_, "category": args.category}
 )
 config = archive.ScraperConfig(archiveFilter)
@@ -91,14 +93,14 @@ logging.info("Scraping terminated.")
 
 if not os.path.isdir(args.datadir):
     os.mkdir(args.datadir)
-dateDirectoryTreeCreator = helper.DateDirectoryTreeCreator(
+dateDirectoryTreeCreator = scraper.fileutils.DateDirectoryTreeCreator(
     date_, root_dir=args.datadir
 )
 file_path = dateDirectoryTreeCreator.create_file_path_from_date()
 dateDirectoryTreeCreator.make_dir_tree_from_file_path(file_path)
 file_name_and_path = os.path.join(
     file_path,
-    helper.create_file_name_from_date(
+    scraper.fileutils.create_file_name_from_date(
         date_, suffix="_" + args.category, extension=".json"
     ),
 )

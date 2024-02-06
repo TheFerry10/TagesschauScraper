@@ -1,6 +1,20 @@
 # TagesschauScraper
 
-A library for scraping the German news archive of Tagesschau.de
+
+Introducing "PySoupConfigScraper" – your efficient and versatile web scraping tool built with Python and BeautifulSoup. This powerful application simplifies the process of extracting structured information from HTML content, allowing you to effortlessly gather data from websites with ease.
+
+With PySoupConfigScraper, all you need to do is provide the HTML content of the webpage you want to scrape and a configuration file that specifies the content you're interested in extracting. The configuration file acts as your guide, detailing which specific elements or tags contain the desired information.
+
+Whether you're scraping product details, news articles, or any other structured data, PySoupConfigScraper streamlines the process, saving you valuable time and effort. Plus, its flexibility allows you to adapt to different websites and layouts by simply adjusting the configuration file.
+
+Key Features:
+
+Seamless HTML Parsing: Utilizes BeautifulSoup for efficient parsing of HTML content.
+Configurable Extraction: Extracts targeted information based on your customized configuration file.
+Structured Data Output: Outputs scraped data in a structured format, such as JSON or CSV, for easy analysis and integration into your projects.
+Versatile Application: Suitable for a wide range of scraping tasks, from e-commerce product scraping to news aggregation and beyond.
+Python-Powered: Leverages the simplicity and power of Python for scripting and automation.
+Whether you're a data enthusiast, researcher, or developer, PySoupConfigScraper empowers you to harness the wealth of information available on the web, transforming unstructured HTML into actionable insights with precision and efficiency. Experience the convenience of targeted web scraping with PySoupConfigScraper today!
 
 ## Install
 Tagesschauscraper is available on PyPI:

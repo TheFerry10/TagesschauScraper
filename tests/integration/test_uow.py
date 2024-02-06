@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.sql import text
 
-from tagesschauscraper.service_layer import unit_of_work
+from tagesschau.service_layer import unit_of_work
 
 
 def insert_teaser(

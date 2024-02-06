@@ -4,16 +4,18 @@ from unittest.mock import patch
 
 from bs4 import BeautifulSoup
 
-from tagesschauscraper.domain.archive import (
+from tagesschau.domain.archive import (
     ArchiveScraper,
-    get_archive_response,
 )
-from tagesschauscraper.domain.article import (
-    Article,
-    ArticleScraper,
+from tagesschau.domain.model import (
     get_article_response,
 )
-from tagesschauscraper.domain.teaser import Teaser, TeaserScraper
+from tagesschau.domain.model import (
+    Article,
+    Teaser,
+    get_archive_response,
+)
+from bluescraper.scraper import Scraper
 
 
 @patch("tagesschauscraper.domain.archive.requests.get")

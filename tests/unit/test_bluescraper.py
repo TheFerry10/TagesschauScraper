@@ -1,69 +1,19 @@
 from pathlib import Path
-from unittest.mock import patch
 
-import pytest
 from bs4 import BeautifulSoup
 
-from tagesschauscraper.domain import teaser
-from tagesschauscraper.domain.constants import TEASER_TEST_DATA_DIR
-from tagesschauscraper.domain.helper import (
-    ConfigReader,
-    TagDefinition,
-    ValidationConfig,
-    extract_link,
-    extract_text,
-    SoapValidator,
+from bluescraper.config import (
     Config,
+    ConfigReader,
     ScrapingConfig,
     TagScrapingConfig,
-    ExistingStringInTag,
 )
-from tagesschauscraper.domain.teaser import Teaser
-
-
-@pytest.fixture(name="teaser_html")
-def teaser_html_(request):
-    file_name = request.param
-    with open(
-        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
-        content = f.read()
-    return content
-
-
-@pytest.fixture(name="invalid_teaser_html")
-def invalid_teaser_html_():
-    file_name = "invalid-teaser.html"
-    with open(
-        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
-        content = f.read()
-    return content
-
-
-@pytest.fixture(name="valid_teaser_html")
-def valid_teaser_html_():
-    file_name = "valid-teaser.html"
-    with open(
-        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
-        content = f.read()
-    return content
-
-
-@pytest.fixture(name="valid_teaser")
-def valid_teaser_():
-    file_name = "valid-teaser.html"
-    with open(
-        TEASER_TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8"
-    ) as f:
-        content = f.read()
-    soup = BeautifulSoup(content, "html.parser")
-
-    teaser_config_path = Path("tests/data/config/teaser-config.yml")
-    config_reader = ConfigReader(teaser_config_path)
-    teaser_config = config_reader.load()
-    return teaser.TeaserScraper(soup, teaser_config)
+from bluescraper.utils import TagDefinition
+from bluescraper.validation import (
+    ExistingStringInTag,
+    SoapValidator,
+    ValidationConfig,
+)
 
 
 def test_loading_config_from_file():
@@ -75,10 +25,10 @@ def test_loading_config_from_file():
         )
         for id, content_type, name, attrs in [
             ("article_link", "href", None, {"class": "teaser-right__link"}),
-            ("topline", "text", None, {"class": "teaser-right__labeltopline"}),
-            ("headline", "text", None, {"class": "teaser-right__headline"}),
-            ("shorttext", "text", None, {"class": "teaser-right__shorttext"}),
-            ("date", "text", None, {"class": "teaser-right__date"}),
+            ("topline", None, None, {"class": "teaser-right__labeltopline"}),
+            ("headline", None, None, {"class": "teaser-right__headline"}),
+            ("shorttext", None, None, {"class": "teaser-right__shorttext"}),
+            ("date", None, None, {"class": "teaser-right__date"}),
         ]
     ]
     scraping = ScrapingConfig(tags=tags)
@@ -180,7 +130,7 @@ def test_reading_scraper_config_from_yaml():
                 },
                 {
                     "id": "topline",
-                    "content_type": "text",
+                    "content_type": None,
                     "tag": {
                         "name": None,
                         "attrs": {"class": "teaser-right__labeltopline"},
@@ -188,7 +138,7 @@ def test_reading_scraper_config_from_yaml():
                 },
                 {
                     "id": "headline",
-                    "content_type": "text",
+                    "content_type": None,
                     "tag": {
                         "name": None,
                         "attrs": {"class": "teaser-right__headline"},
@@ -196,7 +146,7 @@ def test_reading_scraper_config_from_yaml():
                 },
                 {
                     "id": "shorttext",
-                    "content_type": "text",
+                    "content_type": None,
                     "tag": {
                         "name": None,
                         "attrs": {"class": "teaser-right__shorttext"},
@@ -204,7 +154,7 @@ def test_reading_scraper_config_from_yaml():
                 },
                 {
                     "id": "date",
-                    "content_type": "text",
+                    "content_type": None,
                     "tag": {
                         "name": None,
                         "attrs": {"class": "teaser-right__date"},
@@ -218,8 +168,8 @@ def test_reading_scraper_config_from_yaml():
 
 def test_reading_scraper_config_from_json():
     filepath = Path("tests/data/config/teaser-config.json")
-    configReader = ConfigReader(filepath)
-    config_raw = configReader.read()
+    config_reader = ConfigReader(filepath)
+    config_raw = config_reader.read()
     expected = {
         "validation": {
             "existing_tags": [
@@ -292,68 +242,12 @@ def test_reading_scraper_config_from_json():
     assert config_raw == expected
 
 
-def test_extract_link_to_article(valid_teaser):
-    expected_link_to_article = "/dummy/article.html"
-    link_to_article = valid_teaser.extract_tag(
-        valid_teaser.config.scraping["article_link"], extract_link
-    )
-    assert expected_link_to_article == link_to_article
-
-
-def test_extract_topline(valid_teaser):
-    expected_topline = "Test topline"
-    topline = valid_teaser.extract_tag(
-        valid_teaser.config.scraping["topline"], extract_text
-    )
-    assert topline == expected_topline
-
-
-def test_extract_headline(valid_teaser):
-    expected_headline = "Test headline"
-    headline = valid_teaser.extract_tag(
-        valid_teaser.config.scraping["headline"], extract_text
-    )
-    assert headline == expected_headline
-
-
-def test_extract_shorttext(valid_teaser):
-    expected_shorttext = "Test short text"
-    shorttext = valid_teaser.extract_tag(
-        valid_teaser.config.scraping["shorttext"], extract_text
-    )
-    assert shorttext == expected_shorttext
-
-
-def test_extract_date(valid_teaser):
-    expected_date = "08.10.2023 • 13:17 Uhr"
-    topline = valid_teaser.extract_tag(
-        valid_teaser.config.scraping["date"], extract_text
-    )
-    assert topline == expected_date
-
-
-@patch("tagesschauscraper.domain.teaser.get_extraction_timestamp")
-def test_extract(mock_extraction_timestamp, valid_teaser):
-    mock_extraction_timestamp.return_value = "2023-01-01T00:00:00"
-    expectedTeaser = Teaser(
-        date="08.10.2023 • 13:17 Uhr",
-        shorttext="Test short text",
-        headline="Test headline",
-        topline="Test topline",
-        article_link="/dummy/article.html",
-        extraction_timestamp="2023-01-01T00:00:00",
-    )
-    assert valid_teaser.can_scrape()
-    teaser_ = valid_teaser.extract()
-    assert teaser_ == expectedTeaser
-
-
 def test_validation_for_valid_html_teaser(valid_teaser_html):
     soup = BeautifulSoup(valid_teaser_html, "html.parser")
-    existing_tags = [TagDefinition("div", {"class": "teaser-right twelve"})]
-    validation_content = ValidationConfig(
-        existing_tags, existing_strings_in_tags=[]
-    )
+    existing_tags = [
+        TagDefinition(name="div", attrs={"class": "teaser-right twelve"})
+    ]
+    validation_content = ValidationConfig(existing_tags=existing_tags)
     validator = SoapValidator(soup, validation_content)
     validator.validate()
     assert validator.valid
@@ -361,10 +255,10 @@ def test_validation_for_valid_html_teaser(valid_teaser_html):
 
 def test_validation_for_invalid_html_teaser(invalid_teaser_html):
     soup = BeautifulSoup(invalid_teaser_html, "html.parser")
-    existing_tags = [TagDefinition("div", {"class": "teaser-right twelve"})]
-    validation_content = ValidationConfig(
-        existing_tags, existing_strings_in_tags=[]
-    )
+    existing_tags = [
+        TagDefinition(name="div", attrs={"class": "teaser-right twelve"})
+    ]
+    validation_content = ValidationConfig(existing_tags=existing_tags)
     validator = SoapValidator(soup, validation_content)
     validator.validate()
     assert not validator.valid
