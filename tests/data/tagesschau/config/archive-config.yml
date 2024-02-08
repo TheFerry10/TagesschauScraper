@@ -28,5 +28,5 @@ scraping:
       content_type: null
       tag:
         name: null
-        attrs: 
+        attrs:
           class: "archive__headline"

@@ -30,13 +30,13 @@ scraping:
       content_type: null
       tag:
         name: null
-        attrs: 
+        attrs:
           class: "teaser-right__labeltopline"
     - id: "headline"
       content_type: null
       tag:
         name: null
-        attrs: 
+        attrs:
           class: "teaser-right__headline"
     - id: "shorttext"
       content_type: null
@@ -48,5 +48,5 @@ scraping:
       content_type: null
       tag:
         name: null
-        attrs: 
+        attrs:
           class: "teaser-right__date"

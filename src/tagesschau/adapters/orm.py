@@ -2,8 +2,7 @@ from sqlalchemy import Column, ForeignKey, MetaData, Table
 from sqlalchemy.orm import registry, relationship
 from sqlalchemy.types import Integer, String, Text
 
-from tagesschau.domain.model import Article
-from tagesschau.domain.model import Teaser
+from tagesschau.domain.model import Article, Teaser
 
 metadata = MetaData()
 mapper_reg = registry()

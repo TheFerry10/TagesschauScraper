@@ -1,12 +1,12 @@
 import datetime
-from datetime import date
+import hashlib
 from typing import Dict, Optional
 
+import requests
 from bs4 import BeautifulSoup, Tag
 from pydantic import BaseModel
-import hashlib
 
-from bluescraper.constants import DEFAULT_DATE_PATTERN
+from bluescraper.constants import DEFAULT_TIMEOUT
 from tagesschau.domain import constants
 
 
@@ -57,25 +57,19 @@ def extract_from_tag(tag: Tag, key: Optional[str] = None) -> Optional[str]:
     return None
 
 
-def transform_date(
-    date_: date, date_pattern: str = DEFAULT_DATE_PATTERN
-) -> str:
-    return date_.strftime(date_pattern)
-
-
-def transform_date_to_date_in_headline(date_: date) -> str:
+def transform_date_to_date_in_headline(date_: datetime.date) -> str:
     year = date_.year
     month = date_.month
     day = date_.day
     return f"{day}. {constants.GERMAN_MONTHS[month]} {year}"
 
 
-def transform_date_in_headline_to_date(date_in_headline: str) -> date:
+def transform_date_in_headline_to_date(date_in_headline: str) -> datetime.date:
     day_raw, month_raw, year_raw = date_in_headline.split()
     day = int(day_raw[:-1])
     month = constants.GERMAN_MONTHS.index(month_raw)
     year = int(year_raw)
-    return date(year, month, day)
+    return datetime.date(year, month, day)
 
 
 def cast_to_list(input_: object) -> list[object]:
@@ -149,3 +143,28 @@ def get_date_range(
         ]
     else:
         raise ValueError("end_date must be after start_date.")
+
+
+def get_html(url: str, request_params: Optional[dict] = None) -> Optional[str]:
+    # headers = {
+    # 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.9999.999 Safari/537.36',
+    # 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    # 'Accept-Language': 'en-US,en;q=0.5',
+    # 'Referer': 'http://example.com',
+    # 'Connection': 'keep-alive'
+    # }
+    response = requests.get(
+        url=url, params=request_params, timeout=DEFAULT_TIMEOUT
+    )
+    if response.ok:
+        return response.text
+    return None
+
+
+def get_soup(
+    url: str, request_params: Optional[dict] = None
+) -> Optional[BeautifulSoup]:
+    html = get_html(url, request_params)
+    if html:
+        return BeautifulSoup(html, "html.parser")
+    return None

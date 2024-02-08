@@ -4,8 +4,7 @@ from pathlib import Path
 from sqlalchemy.sql import text
 
 from tagesschau.adapters import repository
-from tagesschau.domain.model import Article
-from tagesschau.domain.model import Teaser
+from tagesschau.domain.model import Article, Teaser
 
 
 def test_repository_can_save_a_teaser(session):

@@ -34,7 +34,7 @@ test: unittest integrationtest
 typehint:
 	$(ENV_NAME)/bin/python -m mypy $(DIRS)
 
-.PHONY: format 
+.PHONY: format
 format:
 	$(ENV_NAME)/bin/python -m black --line-length=79 --preview $(DIRS)
 
@@ -48,6 +48,3 @@ checklist: typehint format lint test
 .PHONY: convert_readme
 convert_readme:
 	pandoc -f markdown -t rst -o README.rst README.md
-	
-
-

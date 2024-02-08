@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import List, Optional
 
 from bs4 import BeautifulSoup, Tag
+
 from bluescraper.config import Config
 from bluescraper.utils import TagDefinition, extract_from_tag
 from bluescraper.validation import SoapValidator

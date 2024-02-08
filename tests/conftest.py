@@ -8,31 +8,30 @@ from sqlalchemy.orm import clear_mappers, sessionmaker
 from bluescraper.config import ConfigReader
 from bluescraper.scraper import Scraper
 from tagesschau.adapters.orm import metadata, start_mappers
-from tagesschau.domain.constants import TEST_CONFIG_DIR, TEST_DATA_DIR
 from tagesschau.domain.model import ArchiveFilter, create_request_params
 
 
-@pytest.fixture
-def in_memory_db():
+@pytest.fixture(name="in_memory_db")
+def in_memory_db_():
     engine = create_engine("sqlite:///:memory:")
     metadata.create_all(engine)
     return engine
 
 
-@pytest.fixture
-def session_factory(in_memory_db):
+@pytest.fixture(name="session_factory")
+def session_factory_(in_memory_db):
     start_mappers()
     yield sessionmaker(bind=in_memory_db)
     clear_mappers()
 
 
-@pytest.fixture
-def session(session_factory):
+@pytest.fixture(name="session")
+def session_(session_factory):
     return session_factory()
 
 
-@pytest.fixture
-def sqlite_session():
+@pytest.fixture(name="sqlite_session")
+def sqlite_session_():
     engine = create_engine("sqlite:///:memory:")
     metadata.create_all(engine)
     start_mappers()
@@ -40,29 +39,28 @@ def sqlite_session():
     return Session()
 
 
-@pytest.fixture
-def html(request):
-    file_name = request.param
-    with open(TEST_DATA_DIR.joinpath(file_name), "r", encoding="utf-8") as f:
+@pytest.fixture(name="html")
+def html_(request):
+    file_path = request.param
+    with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
     return content
 
 
-@pytest.fixture
-def soup(html):
+@pytest.fixture(name="soup")
+def soup_(html):
     return BeautifulSoup(html, "html.parser")
 
 
-@pytest.fixture
-def config(request):
-    config_file_name = request.param
-    config_path = TEST_CONFIG_DIR.joinpath(config_file_name)
+@pytest.fixture(name="config")
+def config_(request):
+    config_path = request.param
     config_reader = ConfigReader(config_path)
     return config_reader.load()
 
 
-@pytest.fixture
-def scraper(soup, config):
+@pytest.fixture(name="scraper")
+def scraper_(soup, config):
     return Scraper(soup, config)
 
 

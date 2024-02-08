@@ -1,14 +1,17 @@
-from pathlib import Path
+from unittest.mock import patch
 
-from bs4 import BeautifulSoup
+import pytest
 
+from bluescraper import constants
 from bluescraper.config import (
     Config,
     ConfigReader,
     ScrapingConfig,
     TagScrapingConfig,
 )
-from bluescraper.utils import TagDefinition
+from bluescraper.constants import DEFAULT_TIMEOUT
+from bluescraper.scraper import Scraper
+from bluescraper.utils import TagDefinition, get_html, get_soup
 from bluescraper.validation import (
     ExistingStringInTag,
     SoapValidator,
@@ -57,8 +60,7 @@ def test_loading_config_from_file():
         existing_strings_in_tags=existing_strings_in_tags,
     )
     expected_config = Config(scraping=scraping, validation=validation)
-
-    filepath = Path("tests/data/config/teaser-config.yml")
+    filepath = constants.TEST_CONFIG_DIR.joinpath("config.yml")
     config_reader = ConfigReader(filepath)
     config = config_reader.load()
     assert config == expected_config
@@ -81,15 +83,14 @@ def test_loading_config_from_file_without_validation():
     ]
     scraping = ScrapingConfig(tags=tags)
     expected_config = Config(scraping=scraping)
-
-    filepath = Path("tests/data/config/teaser-config-no-validation.yml")
+    filepath = constants.TEST_CONFIG_DIR.joinpath("config-no-validation.yml")
     config_reader = ConfigReader(filepath)
     config = config_reader.load()
     assert config == expected_config
 
 
 def test_reading_scraper_config_from_yaml():
-    filepath = Path("tests/data/config/teaser-config.yml")
+    filepath = constants.TEST_CONFIG_DIR.joinpath("config.yml")
     config_reader = ConfigReader(filepath)
     config_raw = config_reader.read()
     expected = {
@@ -167,7 +168,7 @@ def test_reading_scraper_config_from_yaml():
 
 
 def test_reading_scraper_config_from_json():
-    filepath = Path("tests/data/config/teaser-config.json")
+    filepath = constants.TEST_CONFIG_DIR.joinpath("config.json")
     config_reader = ConfigReader(filepath)
     config_raw = config_reader.read()
     expected = {
@@ -242,23 +243,76 @@ def test_reading_scraper_config_from_json():
     assert config_raw == expected
 
 
-def test_validation_for_valid_html_teaser(valid_teaser_html):
-    soup = BeautifulSoup(valid_teaser_html, "html.parser")
+@pytest.mark.parametrize(
+    argnames="html, expected",
+    argvalues=[
+        pytest.param(
+            constants.TEST_HTML_DIR.joinpath("valid.html"),
+            True,
+            id="valid html",
+        ),
+        pytest.param(
+            constants.TEST_HTML_DIR.joinpath("invalid.html"),
+            False,
+            id="invalid html",
+        ),
+    ],
+    indirect=["html"],
+)
+def test_validate_html(soup, expected):
     existing_tags = [
         TagDefinition(name="div", attrs={"class": "teaser-right twelve"})
     ]
     validation_content = ValidationConfig(existing_tags=existing_tags)
     validator = SoapValidator(soup, validation_content)
     validator.validate()
-    assert validator.valid
+    assert validator.valid == expected
 
 
-def test_validation_for_invalid_html_teaser(invalid_teaser_html):
-    soup = BeautifulSoup(invalid_teaser_html, "html.parser")
-    existing_tags = [
-        TagDefinition(name="div", attrs={"class": "teaser-right twelve"})
-    ]
-    validation_content = ValidationConfig(existing_tags=existing_tags)
-    validator = SoapValidator(soup, validation_content)
-    validator.validate()
-    assert not validator.valid
+@pytest.mark.parametrize(
+    "html", [constants.TEST_HTML_DIR.joinpath("valid.html")], indirect=True
+)
+@patch("bluescraper.utils.requests.get")
+def test_get_html(mock_requests_get, html):
+    mock_requests_get.return_value.ok = True
+    mock_requests_get.return_value.text = html
+    html_ = get_html(
+        url="https://example.com/", request_params={"parameter": "value"}
+    )
+    mock_requests_get.assert_called_once_with(
+        url="https://example.com/",
+        params={"parameter": "value"},
+        timeout=DEFAULT_TIMEOUT,
+    )
+    assert html == html_
+
+
+@pytest.mark.parametrize(
+    "html", [constants.TEST_HTML_DIR.joinpath("valid.html")], indirect=True
+)
+@patch("bluescraper.utils.requests.get")
+def test_get_soup(mock_requests_get, soup, html):
+    mock_requests_get.return_value.ok = True
+    mock_requests_get.return_value.text = html
+    soup_ = get_soup(
+        url="https://example.com/", request_params={"parameter": "value"}
+    )
+    mock_requests_get.assert_called_once_with(
+        url="https://example.com/",
+        params={"parameter": "value"},
+        timeout=DEFAULT_TIMEOUT,
+    )
+    assert soup == soup_
+
+
+def test_scraper_service_e2e():
+    soup = get_soup(
+        "https://www.tagesschau.de/archiv",
+        request_params={"datum": "2024-02-08", "filter": "inland"},
+    )
+    config_reader = ConfigReader(constants.CONFIG_YAML)
+    config = config_reader.load()
+    if soup:
+        scraper = Scraper(soup, config)
+        results = scraper.extract()
+    assert False

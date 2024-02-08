@@ -1,14 +1,13 @@
-from io import TextIOWrapper
-
-
-from pathlib import Path
 import json
+from io import TextIOWrapper
+from pathlib import Path
+from typing import List, Optional
+
 import yaml
+from pydantic import BaseModel
+
 from bluescraper.utils import TagDefinition
 from bluescraper.validation import ValidationConfig
-
-from pydantic import BaseModel
-from typing import List, Optional
 
 
 def load_json(stream: TextIOWrapper) -> dict:

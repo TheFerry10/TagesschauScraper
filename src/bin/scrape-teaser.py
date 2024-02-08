@@ -12,11 +12,12 @@ import logging
 import os
 import time
 from datetime import datetime
+
 import scraper.fileutils
 
+import tagesschau.domain.model
 from tagesschau.domain import archive
 from tagesschau.domain.constants import ARCHIVE_URL
-import tagesschau.domain.model
 
 # Argument parsing
 parser = argparse.ArgumentParser(

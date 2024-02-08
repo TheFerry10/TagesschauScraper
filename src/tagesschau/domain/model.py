@@ -1,19 +1,13 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import List, Optional, Union
-from urllib.parse import urljoin
+from typing import List, Optional
 
 from bs4 import BeautifulSoup
 from bs4.element import Tag
-from requests import Response
 
-from bluescraper.constants import DEFAULT_TIMEOUT
-from bluescraper.utils import TagDefinition, transform_date
-from tagesschau.domain.constants import (
-    ARCHIVE_URL,
-    NEWS_CATEGORIES,
-    TAGESSCHAU_URL,
-)
+from bluescraper.utils import TagDefinition
+from tagesschau.domain.constants import ARCHIVE_URL, NEWS_CATEGORIES
+from tagesschau.domain.utils import transform_date
 
 
 @dataclass
@@ -50,24 +44,20 @@ class ArchiveFilter:
     news_category: Optional[str] = None
 
 
-def is_selected_in_categories(
-    category: str,
-) -> bool:
-    return category in NEWS_CATEGORIES
-
-
 def extract_teaser_list(soup: BeautifulSoup) -> List[Tag]:
-    teaser_tag = TagDefinition(
+    teaser_definition = TagDefinition(
         name="div", attrs={"class": "teaser-right twelve"}
     )
     teaser_container = soup.find_all(
-        name=teaser_tag.name, attrs=teaser_tag.attrs
+        name=teaser_definition.name, attrs=teaser_definition.attrs
     )
     return teaser_container
 
 
-def is_category_valid(category: str | None) -> bool:
-    return (category in NEWS_CATEGORIES) | (category is None)
+def is_category_valid(category: Optional[str]) -> bool:
+    if isinstance(category, str):
+        return category.lower() in NEWS_CATEGORIES
+    return category is None
 
 
 def create_request_params(archive_filter: ArchiveFilter) -> dict:
@@ -79,66 +69,16 @@ def create_request_params(archive_filter: ArchiveFilter) -> dict:
     raise ValueError
 
 
-def get_archive_response(request_params: dict) -> Union[Response, None]:
-    """
-    Service for retrieving the html of the archive.
-
-    Parameters
-    ----------
-    request_params : dict
-        HTTP request params
-
-    Returns
-    -------
-    str
-        HTML of archive
-    """
-    response = requests.get(
-        ARCHIVE_URL, params=request_params, timeout=DEFAULT_TIMEOUT
-    )
-    if response.ok:
-        return response
-    else:
-        return None
-
-
-def get_archive_html(archive_filter: ArchiveFilter) -> BeautifulSoup:
+def get_archive_soup(archive_filter: ArchiveFilter) -> Optional[BeautifulSoup]:
     request_params = create_request_params(archive_filter)
-    response = requests.get(
-        ARCHIVE_URL, params=request_params, timeout=DEFAULT_TIMEOUT
-    )
-    return BeautifulSoup(response.text, "html.parser")
+    response = get_response(ARCHIVE_URL, request_params)
+    if response:
+        return BeautifulSoup(response.text, "html.parser")
+    return None
 
 
 class ArticleTagNotFound(Exception):
     pass
-
-
-def get_article_response(link: str) -> Union[Response, None]:
-    """
-    Service for retrieving the html of the article.
-
-    Parameters
-    ----------
-    request_params : dict
-        HTTP request params
-
-    Returns
-    -------
-    str
-        HTML of archive
-    """
-    url = urljoin(TAGESSCHAU_URL, link)
-    response = requests.get(url, timeout=DEFAULT_TIMEOUT)
-    if response.ok:
-        return response
-    else:
-        return None
-
-
-def get_article_html(link: str) -> BeautifulSoup:
-    response = get_article_response(link)
-    return BeautifulSoup(response.text, "html.parser")
 
 
 # def scrape_teaser_list(teaser_list: List[str]) -> List[Teaser]:

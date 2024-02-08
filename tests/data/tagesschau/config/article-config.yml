@@ -17,7 +17,7 @@ scraping:
       content_type: null
       tag:
         name: null
-        attrs: 
+        attrs:
           class: "seitenkopf__headline--text"
     - id: "metatextline"
       content_type: null
@@ -29,25 +29,25 @@ scraping:
       content_type: null
       tag:
         name: null
-        attrs: 
+        attrs:
           class: "meldung__subhead columns twelve m-ten m-offset-one l-eight l-offset-two liveblog--anchor"
     - id: "tags"
       content_type: null
       tag:
         name: "li"
-        attrs: 
+        attrs:
           class: "taglist__element"
     - id: "abstract"
       content_type: null
       tag:
         name: null
-        attrs: 
+        attrs:
           class: "textabsatz columns twelve m-ten m-offset-one l-eight l-offset-two"
     - id: "paragraphs"
       content_type: null
       tag:
         name: null
-        attrs: 
+        attrs:
           class: "textabsatz m-ten m-offset-one l-eight l-offset-two columns twelve"
     - id: "article_link"
       content_type: "content"

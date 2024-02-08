@@ -1,11 +1,11 @@
 import pytest
 
-from tagesschau.domain import model
+from tagesschau.domain import constants, model
 
 
 @pytest.mark.parametrize(
     "html, config",
-    [("archive/valid-archive.html", "archive-config.yml")],
+    [(constants.ARCHIVE_HTML_PATH, constants.ARCHIVE_CONFIG_YAML)],
     indirect=True,
 )
 def test_extract_archive(scraper):
@@ -38,7 +38,7 @@ def test_extract_archive(scraper):
 
 @pytest.mark.parametrize(
     "html",
-    ["archive/valid-archive.html"],
+    [constants.ARCHIVE_HTML_PATH],
     indirect=True,
 )
 def test_extract_teaser_list(soup):
@@ -49,17 +49,9 @@ def test_extract_teaser_list(soup):
     assert teaser_dates == expected_teaser_dates
 
 
-def test_if_available_category_is_recognized():
-    assert model.is_selected_in_categories("wirtschaft")
-
-
-def test_if_not_available_category_leads_to_false():
-    assert not model.is_selected_in_categories("test category")
-
-
 @pytest.mark.parametrize(
     "html, config",
-    [("article/valid-article.html", "article-config.yml")],
+    [(constants.ARTICLE_HTML_PATH, constants.ARTICLE_CONFIG_YAML)],
     indirect=True,
 )
 def test_extract_article(scraper):
@@ -81,7 +73,7 @@ def test_extract_article(scraper):
 
 @pytest.mark.parametrize(
     "html, config",
-    [("teaser/valid-teaser.html", "teaser-config.yml")],
+    [(constants.TEASER_HTML_PATH, constants.TEASER_CONFIG_YAML)],
     indirect=True,
 )
 def test_extract_teaser(scraper):

@@ -31,7 +31,7 @@ import os
 from datetime import date
 from tagesschauscraper import constants, helper, tagesschau
 
-# Scraping teaser published on <date_> and in specific news category  
+# Scraping teaser published on <date_> and in specific news category
 DATA_DIR = "data"
 date_ = date(2022,3,1)
 category = "wirtschaft"

@@ -27,12 +27,12 @@ scraping:
   - id: topline
     tag:
       name: null
-      attrs: 
+      attrs:
         class: "teaser-right__labeltopline"
   - id: headline
     tag:
       name: null
-      attrs: 
+      attrs:
         class: "teaser-right__headline"
   - id: shorttext
     tag:
@@ -42,5 +42,5 @@ scraping:
   - id: date
     tag:
       name: null
-      attrs: 
+      attrs:
         class: "teaser-right__date"
