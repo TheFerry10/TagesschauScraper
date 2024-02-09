@@ -8,9 +8,10 @@ from bluescraper.config import (
     ConfigReader,
     ScrapingConfig,
     TagScrapingConfig,
+    GroupScrapingConfig,
 )
 from bluescraper.constants import DEFAULT_TIMEOUT
-from bluescraper.scraper import Scraper
+from bluescraper.scraper import Scraper, get_group_tags
 from bluescraper.utils import TagDefinition, get_html, get_soup
 from bluescraper.validation import (
     ExistingStringInTag,
@@ -34,7 +35,23 @@ def test_loading_config_from_file():
             ("date", None, None, {"class": "teaser-right__date"}),
         ]
     ]
-    scraping = ScrapingConfig(tags=tags)
+    groups = [
+        GroupScrapingConfig(
+            id="teaser",
+            contains=[
+                "article_link",
+                "topline",
+                "headline",
+                "shorttext",
+                "date",
+            ],
+            tag=TagDefinition(
+                name="div",
+                attrs={"class": "teaser-right__media columns four l-three"},
+            ),
+        )
+    ]
+    scraping = ScrapingConfig(tags=tags, groups=groups)
 
     existing_tags = [
         TagDefinition(name=name, attrs=attrs)
@@ -60,7 +77,7 @@ def test_loading_config_from_file():
         existing_strings_in_tags=existing_strings_in_tags,
     )
     expected_config = Config(scraping=scraping, validation=validation)
-    filepath = constants.TEST_CONFIG_DIR.joinpath("config.yml")
+    filepath = constants.TEST_CONFIG_DIR.joinpath("config-groups.yml")
     config_reader = ConfigReader(filepath)
     config = config_reader.load()
     assert config == expected_config
@@ -305,6 +322,51 @@ def test_get_soup(mock_requests_get, soup, html):
     assert soup == soup_
 
 
+@pytest.mark.parametrize(
+    "html, config",
+    [(constants.VALID_HTML_PATH, constants.CONFIG_YAML)],
+    indirect=True,
+)
+def test_extract_tags_with_config_file(scraper):
+    expected = {
+        "date": "08.10.2023 • 13:17 Uhr",
+        "shorttext": "Test short text",
+        "headline": "Test headline",
+        "topline": "Test topline",
+        "article_link": "/dummy/article.html",
+    }
+    extracted_data = scraper.extract()
+    assert extracted_data == expected
+
+
+@pytest.mark.parametrize(
+    "html, config",
+    [(constants.VALID_GROUPS_HTML_PATH, constants.CONFIG_GROUPS_YAML)],
+    indirect=True,
+)
+def test_extract_grouped_tags_from_html_with_config_file(scraper):
+    expected = {
+        "teaser": [
+            {
+                "date": "08.10.2023 • 13:17 Uhr",
+                "shorttext": "Test short text",
+                "headline": "Test headline",
+                "topline": "Test topline",
+                "article_link": "/dummy/article.html",
+            },
+            {
+                "date": "09.02.2024 • 21:28 Uhr",
+                "shorttext": "Test short text 2",
+                "headline": "Test headline 2",
+                "topline": "Test topline 2",
+                "article_link": "/dummy/article2.html",
+            },
+        ]
+    }
+    extracted_data = scraper.extract()
+    assert extracted_data == expected
+
+
 def test_scraper_service_e2e():
     soup = get_soup(
         "https://www.tagesschau.de/archiv",
@@ -316,3 +378,17 @@ def test_scraper_service_e2e():
         scraper = Scraper(soup, config)
         results = scraper.extract()
     assert False
+
+
+def test_get_group_tags():
+    expected = [
+        TagScrapingConfig(id=id, tag=TagDefinition(attrs={"class": "dummy"}))
+        for id in ["a", "b"]
+    ]
+    tags = [
+        TagScrapingConfig(id=id, tag=TagDefinition(attrs={"class": "dummy"}))
+        for id in ["a", "b", "c"]
+    ]
+    contains = ["a", "b"]
+    tags_in_group = get_group_tags(contains=contains, tags=tags)
+    assert tags_in_group == expected

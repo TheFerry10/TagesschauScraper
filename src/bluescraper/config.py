@@ -30,8 +30,15 @@ class TagScrapingConfig(BaseModel):
     content_type: Optional[str] = None
 
 
+class GroupScrapingConfig(BaseModel):
+    id: str
+    contains: List[str]
+    tag: TagDefinition
+
+
 class ScrapingConfig(BaseModel):
     tags: List[TagScrapingConfig]
+    groups: Optional[List[GroupScrapingConfig]] = None
 
 
 class Config(BaseModel):
