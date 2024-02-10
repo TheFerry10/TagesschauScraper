@@ -328,13 +328,19 @@ def test_get_soup(mock_requests_get, soup, html):
     indirect=True,
 )
 def test_extract_tags_with_config_file(scraper):
-    expected = {
-        "date": "08.10.2023 • 13:17 Uhr",
-        "shorttext": "Test short text",
-        "headline": "Test headline",
-        "topline": "Test topline",
-        "article_link": "/dummy/article.html",
-    }
+    expected = [
+        Scraper.ScraperGroupData(
+            results=[
+                {
+                    "date": "08.10.2023 • 13:17 Uhr",
+                    "shorttext": "Test short text",
+                    "headline": "Test headline",
+                    "topline": "Test topline",
+                    "article_link": "/dummy/article.html",
+                }
+            ]
+        )
+    ]
     extracted_data = scraper.extract()
     assert extracted_data == expected
 
@@ -345,24 +351,76 @@ def test_extract_tags_with_config_file(scraper):
     indirect=True,
 )
 def test_extract_grouped_tags_from_html_with_config_file(scraper):
-    expected = {
-        "teaser": [
-            {
-                "date": "08.10.2023 • 13:17 Uhr",
-                "shorttext": "Test short text",
-                "headline": "Test headline",
-                "topline": "Test topline",
-                "article_link": "/dummy/article.html",
-            },
-            {
-                "date": "09.02.2024 • 21:28 Uhr",
-                "shorttext": "Test short text 2",
-                "headline": "Test headline 2",
-                "topline": "Test topline 2",
-                "article_link": "/dummy/article2.html",
-            },
-        ]
-    }
+    expected = [
+        Scraper.ScraperGroupData(
+            results=[
+                {
+                    "date": "08.10.2023 • 13:17 Uhr",
+                    "shorttext": "Test short text",
+                    "headline": "Test headline",
+                    "topline": "Test topline",
+                    "article_link": "/dummy/article.html",
+                },
+                {
+                    "date": "09.02.2024 • 21:28 Uhr",
+                    "shorttext": "Test short text 2",
+                    "headline": "Test headline 2",
+                    "topline": "Test topline 2",
+                    "article_link": "/dummy/article2.html",
+                },
+            ],
+            group_id="teaser",
+        )
+    ]
+    extracted_data = scraper.extract()
+    assert extracted_data == expected
+
+
+@pytest.mark.parametrize(
+    "html, config",
+    [
+        (
+            constants.VALID_GROUPS_HTML_PATH,
+            constants.CONFIG_MULTIPLE_GROUPS_YAML,
+        )
+    ],
+    indirect=True,
+)
+def test_extract_multiple_grouped_tags_from_html_with_config_file(scraper):
+    expected = [
+        Scraper.ScraperGroupData(
+            results=[
+                {
+                    "date": "08.10.2023 • 13:17 Uhr",
+                    "shorttext": "Test short text",
+                    "headline": "Test headline",
+                    "topline": "Test topline",
+                    "article_link": "/dummy/article.html",
+                },
+                {
+                    "date": "09.02.2024 • 21:28 Uhr",
+                    "shorttext": "Test short text 2",
+                    "headline": "Test headline 2",
+                    "topline": "Test topline 2",
+                    "article_link": "/dummy/article2.html",
+                },
+            ],
+            group_id="teaser",
+        ),
+        Scraper.ScraperGroupData(
+            results=[
+                {
+                    "headline": "Test headline",
+                    "topline": "Test topline",
+                },
+                {
+                    "headline": "Test headline 2",
+                    "topline": "Test topline 2",
+                },
+            ],
+            group_id="line",
+        ),
+    ]
     extracted_data = scraper.extract()
     assert extracted_data == expected
 

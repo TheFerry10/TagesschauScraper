@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import List, Optional
 
 from bs4 import BeautifulSoup, Tag
-
 from bluescraper.config import Config, TagScrapingConfig
 from bluescraper.utils import TagDefinition, extract_from_tag
 from bluescraper.validation import SoapValidator
+from dataclasses import dataclass
 
 
 class HtmlTagNotExists(Exception):
@@ -28,6 +28,7 @@ class Scraper:
 
     def can_scrape(self) -> bool:
         if self.config.validation:
+            # TODO is this a case for apply dependency injection?
             validator = SoapValidator(
                 soup=self.soup,
                 validation_config=self.config.validation,
@@ -62,20 +63,22 @@ class Scraper:
             return delimiter.join(content)
         return None
 
-    def extract(self) -> dict:
-        # extraction_timestamp=get_extraction_timestamp(),
-        # extract_function = {"text": extract_text, "href": extract_link, "content"}
-        # extract_from_tag()
+    # TODO Find a better name as ScraperGroupData
+    @dataclass
+    class ScraperGroupData:
+        results: List[dict]
+        group_id: Optional[str] = None
+
+    def extract(self) -> List[ScraperGroupData]:
+        # TODO Simplify logic for the extraction
         if self.config.scraping.groups:
-            for group in self.config.scraping.groups:
-                soup_batches = self.soup.find_all(
-                    name=group.tag.name, attrs=group.tag.attrs
-                )
-                result = {
-                    group.id: [
+            return [
+                Scraper.ScraperGroupData(
+                    group_id=group.id,
+                    results=[
                         {
                             tag.id: self.extract_tag(
-                                soup=soup,
+                                soup=group_soup,
                                 tag=tag.tag,
                                 content_type=tag.content_type,
                             )
@@ -83,22 +86,31 @@ class Scraper:
                                 group.contains, self.config.scraping.tags
                             )
                         }
-                        for soup in soup_batches
-                    ]
-                }
-        else:
-            tags = self.config.scraping.tags
-            result = {
-                tag.id: self.extract_tag(
-                    tag=tag.tag,
-                    content_type=tag.content_type,
+                        for group_soup in self.soup.find_all(
+                            name=group.tag.name, attrs=group.tag.attrs
+                        )
+                    ],
                 )
-                for tag in tags
-            }
-        return result
+                for group in self.config.scraping.groups
+            ]
+        return [
+            Scraper.ScraperGroupData(
+                results=[
+                    {
+                        tag.id: self.extract_tag(
+                            soup=self.soup,
+                            tag=tag.tag,
+                            content_type=tag.content_type,
+                        )
+                        for tag in self.config.scraping.tags
+                    }
+                ]
+            )
+        ]
 
 
 def get_group_tags(
     contains: List[str], tags: List[TagScrapingConfig]
 ) -> List[TagScrapingConfig]:
+    # TODO error handling
     return [tag for tag in tags if tag.id in contains]

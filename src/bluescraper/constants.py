@@ -8,6 +8,9 @@ VALID_GROUPS_HTML_PATH = TEST_HTML_DIR.joinpath("valid-groups.html")
 INVALID_HTML_PATH = TEST_HTML_DIR.joinpath("invalid.html")
 CONFIG_YAML = TEST_CONFIG_DIR.joinpath("config.yml")
 CONFIG_GROUPS_YAML = TEST_CONFIG_DIR.joinpath("config-groups.yml")
+CONFIG_MULTIPLE_GROUPS_YAML = TEST_CONFIG_DIR.joinpath(
+    "config-multiple-groups.yml"
+)
 CONFIG_NO_VALIDATION_YAML = TEST_CONFIG_DIR.joinpath(
     "config-no-validation.yml"
 )
